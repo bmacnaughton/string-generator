@@ -1,5 +1,5 @@
 {
-  "name": "@bmacnaughton/generator",
+  "name": "@bmacnaughton/string-generator",
   "version": "1.0.0",
   "description": "generate specific string patterns from simple templates",
   "main": "index.js",

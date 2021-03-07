@@ -1,5 +1,5 @@
 
-# test-strings
+# string-generator
 
 This is a simple template-based string generator. I wanted to generate
 random strings that met specific criteria for tests.
@@ -10,12 +10,12 @@ It's early in development so not bulletproof, but it works.
 
 You know the routine.
 
-`$ npm install --save-dev @bmacnaughton/test-strings`
+`$ npm install --save-dev @bmacnaughton/string-generator`
 
 ## Usage
 
 ```js
-const gen = require('@bmacnaughton/test-strings');
+const gen = require('@bmacnaughton/string-generator');
 
 gen('${[A-F0-9]}');   // one random hex character
 gen('${=hex}');       // one random lowercase hex character
