@@ -1,0 +1,17 @@
+{
+  "name": "@bmacnaughton/generator",
+  "version": "1.0.0",
+  "description": "generate specific string patterns from simple templates",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "strings",
+    "generator",
+    "random",
+    "testing"
+  ],
+  "author": "Bruce A. MacNaughton <bmacnaughton@gmail.com>",
+  "license": "ISC"
+}
