@@ -57,7 +57,7 @@ const hex = decodeRanges('a-f0-9');
 const HEX = decodeRanges('A-F0-9');
 const base58 = decodeRanges('A-HJ-NP-Za-km-z1-9');
    */
-  it('generates codeword strings correctly', function() {
+  it('generates code-word strings correctly', function() {
     const codeWords = Object.keys(codeWordTests);
     for (let i = 0; i < maxTests; i++) {
       for (let j = 0; j < codeWords.length; j++) {
