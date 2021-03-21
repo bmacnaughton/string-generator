@@ -1,10 +1,16 @@
 
 # string-generator
 
+![build status](https://github.com/bmacnaughton/string-generator/actions/workflows/on-new-code.yml/badge.svg?branch=master)
+
 This is a simple template-based string generator. I wanted to generate
 random strings that met specific criteria for tests.
 
-It's early in development so not bulletproof, but it works.
+Why not use an existing package that does everything, like [faker](https://github.com/Marak/Faker.js)?
+If you need the complexity that comes with `faker` then by all means use
+it. But if you want to work with a very simple, template-driven API, then
+this might be helpful. It's simple, small, flexible and, time permitting,
+will be extensible.
 
 ## Installing
 
@@ -69,5 +75,8 @@ gen('${literal<2>}'); // 'literalliteral'
 
 - add base64 (convert given string to base64)
 - allow <n|m|o> syntax on count spec to choose one of the given lengths
-- test suite
-- options like supplying random number generator? others?
+- ~~test suite~~
+- options like supplying random number generator?
+- function with argument? '@func(argument)'?
+- others?
+- extend code-words (requires `new gen.Gen()` i think)
