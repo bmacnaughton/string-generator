@@ -27,6 +27,7 @@ jobs:
       run: npm test
     - if: matrix.node-version == 14
       name: generate code coverage
+      run: mkdir -p .nyc_output
       run: npm run test:ci > coverage.lcov
     - if: matrix.node-version == 14
       name: send coverage to codecov
