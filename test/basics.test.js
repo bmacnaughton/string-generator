@@ -67,22 +67,32 @@ const base58 = decodeRanges('A-HJ-NP-Za-km-z1-9');
     }
   });
 
+  it('handles bad code-words by throwing', function() {
+    const thrower = () => gen('${=bad-word}');
+    expect(thrower).throws('bad code-word: bad-word');
+  });
+
   it('generates range strings correctly', function() {
     const loCode = 'A'.charCodeAt(0);
     for (let i = 0; i < maxTests; i++) {
       const hiCode = loCode + random(1, 25);
       const loChar = String.fromCharCode(loCode);
-      const hiChar = String.fromCharCode(hiCode);
+      let hiChar = String.fromCharCode(hiCode);
       const max = random(1, 20);
       const genTemplate = `\${[${loChar}-${hiChar}]<1,${max}>}`;
       if (hiChar === '\\' || hiChar === '-') {
         hiChar = `\\${hiChar}`;
       }
-      const re = new RegExp(`^[${loChar}-${hiChar}]{1,${max}}$`)
+      const re = new RegExp(`^[${loChar}-${hiChar}]{1,${max}}$`);
 
       const string = gen(genTemplate);
       expect(string).match(re, `${genTemplate} didn't match ${re}`);
     }
+  });
+
+  it('handles dash in range string', function() {
+    const string = gen('${[-a]<5>}');
+    expect(string).match(/^(a|-){5}$/);
   });
 
   it('generate choice strings correctly', function() {
@@ -90,7 +100,6 @@ const base58 = decodeRanges('A-HJ-NP-Za-km-z1-9');
       const words = ['cat', 'dog', 'pig', 'rat', 'sparrow'];
       const nWords = random(1, words.length - 1);
       const choices = [];
-      debugger
       for (let j = nWords - 1; j >= 0; j--) {
         const ix = random(0, words.length - 1);
         const word = words.splice(ix, 1)[0];

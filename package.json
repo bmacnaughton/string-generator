@@ -4,9 +4,12 @@
   "description": "generate specific string patterns from simple templates",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test/*.test.js"
+    "test": "mocha test/*.test.js",
+    "test:nyc": "nyc npm test",
+    "test:ci": "nyc report --reporter=text-lcov"
   },
   "keywords": [
+    "simple",
     "strings",
     "generator",
     "random",
@@ -16,6 +19,8 @@
   "license": "ISC",
   "devDependencies": {
     "chai": "^4.3.4",
-    "mocha": "^8.3.2"
-  }
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0"
+  },
+  "dependencies": {}
 }
