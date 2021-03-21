@@ -49,14 +49,6 @@ const codeWordTests = {
 };
 
 describe('basic tests', function () {
-  /**
-  const alpha = decodeRanges('A-Za-z');
-const numeric = decodeRanges('0-9');
-const alphanumeric = decodeRanges('A-Za-z0-9');
-const hex = decodeRanges('a-f0-9');
-const HEX = decodeRanges('A-F0-9');
-const base58 = decodeRanges('A-HJ-NP-Za-km-z1-9');
-   */
   it('generates code-word strings correctly', function() {
     const codeWords = Object.keys(codeWordTests);
     for (let i = 0; i < maxTests; i++) {
