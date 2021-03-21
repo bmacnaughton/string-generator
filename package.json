@@ -4,7 +4,7 @@
   "description": "generate specific string patterns from simple templates",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test/*.test.js"
   },
   "keywords": [
     "strings",
@@ -13,5 +13,9 @@
     "testing"
   ],
   "author": "Bruce A. MacNaughton <bmacnaughton@gmail.com>",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "mocha": "^8.3.2"
+  }
 }
