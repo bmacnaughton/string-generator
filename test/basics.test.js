@@ -49,7 +49,7 @@ const codeWordTests = {
 };
 
 describe('basic tests', function () {
-  it('generates code-word strings correctly', function() {
+  it('generates codeword strings correctly', function() {
     const codeWords = Object.keys(codeWordTests);
     for (let i = 0; i < maxTests; i++) {
       for (let j = 0; j < codeWords.length; j++) {
