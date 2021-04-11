@@ -52,7 +52,6 @@ jobs:
 
       - if: matrix.node-version == 14
         name: run tests
-        run: env
         run: npm run test:ci
 
       - if: matrix.node-version == 14
