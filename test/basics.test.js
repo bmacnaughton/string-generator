@@ -114,6 +114,13 @@ describe('basic tests', function () {
     expect(string).match(/^(bruce|wenxin|grace){2,4}$/);
   });
 
+  it('should handle oneofs correctly', function() {
+    let string = gen('${(bruce)<2|4>}');
+    expect(string).match(/^(bruce){2}((bruce){2})?$/);
+    string = gen('${(bruce|wenxin|grace)<2|4>}');
+    expect(string).match(/^(bruce|wenxin|grace){2}((bruce|wenxin|grace){2})?$/);
+  });
+
   it('should handle literal replacements', function() {
     let string = gen('${literal}');
     expect(string).equal('literal');
