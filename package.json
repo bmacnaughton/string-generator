@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha test/*.test.js",
     "test:nyc": "nyc mocha test/*.test.js",
-    "test:ci": "nyc report --reporter=text-lcov"
+    "test:ci": "nyc report --reporter=lcov"
   },
   "keywords": [
     "simple",
