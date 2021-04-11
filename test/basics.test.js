@@ -49,7 +49,7 @@ const codeWordTests = {
 };
 
 describe('basic tests', function () {
-  it('generates codeword strings correctly', function() {
+  it('generates code-word strings correctly', function() {
     const codeWords = Object.keys(codeWordTests);
     for (let i = 0; i < maxTests; i++) {
       for (let j = 0; j < codeWords.length; j++) {
@@ -112,6 +112,13 @@ describe('basic tests', function () {
     expect(string).equal('brucebruce', 'a single range number works correctly');
     string = gen('${(bruce|wenxin|grace)<2,4>}');
     expect(string).match(/^(bruce|wenxin|grace){2,4}$/);
+  });
+
+  it('should handle oneofs correctly', function() {
+    let string = gen('${(bruce)<2|4>}');
+    expect(string).match(/^(bruce){2}((bruce){2})?$/);
+    string = gen('${(bruce|wenxin|grace)<2|4>}');
+    expect(string).match(/^(bruce|wenxin|grace){2}((bruce|wenxin|grace){2})?$/);
   });
 
   it('should handle literal replacements', function() {
