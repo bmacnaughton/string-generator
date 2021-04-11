@@ -79,10 +79,9 @@ gen('${literal<2>}'); // 'literalliteral'
 
 ## todos
 
-- add base64 (convert given string to base64)
+- add base64 (convert given string to base64) like what syntax? @b64(arg)?
 - ~~allow <n|m|o> syntax on count spec to choose one of the given lengths~~
 - ~~test suite~~
 - options like supplying random number generator?
-- function with argument? '@func(argument)'?
-- others?
-- extend code-words (requires `new gen.Gen()` i think)
+- options to supply own code-words
+  - requires constructor (new StringGenerator())
