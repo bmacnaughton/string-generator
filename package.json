@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha test/*.test.js",
     "test:nyc": "nyc mocha test/*.test.js",
-    "test:ci": "mkdir -p .nyc_output && nyc -r lcov -r test npm test",
+    "test:ci": "mkdir -p .nyc_output && nyc -r lcov -r text npm test",
     "test:text": "nyc -r text mocha"
   },
   "keywords": [
