@@ -165,7 +165,7 @@ function makeSubstitution (atoms, counts) {
   let iterations;
   if (counts.range) {
     iterations = random(counts.range.min, counts.range.max);
-  } else if (counts.oneof) {
+  } else /* istanbul ignore else */ if (counts.oneof) {
     iterations = counts.oneof[random(0, counts.oneof.length - 1)];
   } else {
     throw 'invalid count-spec';
