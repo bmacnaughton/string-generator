@@ -43,7 +43,7 @@ const hex = decodeRanges('a-f0-9');
 const HEX = decodeRanges('A-F0-9');
 const base58 = decodeRanges('A-HJ-NP-Za-km-z1-9');
 
-const codeWords = {
+const codeWords: {[key: string]: []} = {
   alpha,
   numeric,
   alphanumeric,
@@ -54,7 +54,7 @@ const codeWords = {
 
 const specRE = /\$\{(.+?)\}+/g;
 
-function generate (format) {
+function generate (format: string): string {
   const matches = [];
   let match;
   while ((match = specRE.exec(format)) !== null) {
@@ -105,25 +105,28 @@ function generate (format) {
   return format;
 }
 
-function decodeRanges (range) {
+function decodeRanges (rangeString: string): [] {
   const chars = [];
-  range = range.split('');
+  const range = rangeString.split('');
   if (range[0] === '-') {
     chars.push(range.shift());
   }
-  let lastchar;
+  let lastchar = '';
   for (let i = 0; i < range.length; i++) {
+    // if not a dash then it *might* be the start of a range
     if (range[i] !== '-') {
       chars.push(lastchar = range[i]);
-    } else {
-      const start = lastchar.charCodeAt(0) + 1;
-      const end = range[i + 1].charCodeAt(0);
-      for (let i = start; i <= end; i++) {
-        chars.push(String.fromCharCode(i));
-      }
-      i += 1;
+      continue;
     }
+    // it is a dash, so the last character is the start of a range
+    const start = lastchar.charCodeAt(0) + 1;
+    const end = range[i + 1].charCodeAt(0);
+    for (let i = start; i <= end; i++) {
+      chars.push(String.fromCharCode(i));
+    }
+    i += 1;
   }
+  //
   return [...new Set(chars)];
 }
 
