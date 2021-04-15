@@ -1,4 +1,6 @@
 'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.generate = void 0;
 /**
  * format:
  * '${pattern}${pattern}literal'
@@ -51,6 +53,7 @@ const codeWords = {
 const specRE = /\$\{(.+?)\}+/g;
 function generate(format) {
     const matches = [];
+    const specs = [];
     let match;
     while ((match = specRE.exec(format)) !== null) {
         matches.unshift(match);
@@ -84,12 +87,12 @@ function generate(format) {
                 atoms = [spec];
                 break;
         }
-        matches[i].spec = { type, full, index, min, max, atoms };
+        specs[i] = { type, full, index, min, max, atoms };
     }
     // generate requested string
-    for (let i = 0; i < matches.length; i++) {
+    for (let i = 0; i < specs.length; i++) {
         // generate the substitution according to the spec
-        const spec = matches[i].spec;
+        const spec = specs[i];
         const sub = makeSubstitution(spec.atoms, spec.min, spec.max);
         const fhead = format.substring(0, spec.index);
         const ftail = format.substring(spec.index + spec.full.length);
@@ -97,26 +100,31 @@ function generate(format) {
     }
     return format;
 }
-function decodeRanges(range) {
+exports.generate = generate;
+function decodeRanges(rangeString) {
     const chars = [];
-    range = range.split('');
+    const range = rangeString.split('');
     if (range[0] === '-') {
-        chars.push(range.shift());
+        chars.push('-');
+        range.shift();
+        //chars.push(range.shift());
     }
-    let lastchar;
+    let lastchar = '';
     for (let i = 0; i < range.length; i++) {
+        // if not a dash then it *might* be the start of a range
         if (range[i] !== '-') {
             chars.push(lastchar = range[i]);
+            continue;
         }
-        else {
-            const start = lastchar.charCodeAt(0) + 1;
-            const end = range[i + 1].charCodeAt(0);
-            for (let i = start; i <= end; i++) {
-                chars.push(String.fromCharCode(i));
-            }
-            i += 1;
+        // it is a dash, so the last character is the start of a range
+        const start = lastchar.charCodeAt(0) + 1;
+        const end = range[i + 1].charCodeAt(0);
+        for (let i = start; i <= end; i++) {
+            chars.push(String.fromCharCode(i));
         }
+        i += 1;
     }
+    //
     return [...new Set(chars)];
 }
 const sizeRE = /\<(\d+)(?:, *(\d+))?\>$/;
@@ -143,4 +151,3 @@ function makeSubstitution(atoms, min, max) {
 function random(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-module.exports = generate;

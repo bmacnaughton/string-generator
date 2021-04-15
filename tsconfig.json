@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
-    "outDir": "dist",
-    "rootDir": "./",
+    "outDir": "dist/",
+    "rootDir": "./src",
 
     /* Basic Options */
     // "incremental": true,                         /* Enable incremental compilation */

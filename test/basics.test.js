@@ -1,6 +1,6 @@
 'use strict';
 
-const gen = require('..');
+const {generate: gen} = require('..');
 const expect = require('chai').expect;
 /**
  * format:

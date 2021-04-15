@@ -43,7 +43,7 @@ const hex = decodeRanges('a-f0-9');
 const HEX = decodeRanges('A-F0-9');
 const base58 = decodeRanges('A-HJ-NP-Za-km-z1-9');
 
-const codeWords: {[key: string]: []} = {
+const codeWords: {[key: string]: string[]} = {
   alpha,
   numeric,
   alphanumeric,
@@ -54,8 +54,18 @@ const codeWords: {[key: string]: []} = {
 
 const specRE = /\$\{(.+?)\}+/g;
 
-function generate (format: string): string {
+interface Spec {
+  type: string,
+  full: string,
+  index: number,
+  min: number,
+  max: number,
+  atoms: string[],
+}
+
+export function generate (format: string): string {
   const matches = [];
+  const specs: Spec[] = [];
   let match;
   while ((match = specRE.exec(format)) !== null) {
     matches.unshift(match);
@@ -89,12 +99,12 @@ function generate (format: string): string {
         atoms = [spec];
         break;
     }
-    matches[i].spec = {type, full, index, min, max, atoms};
+    specs[i] = {type, full, index, min, max, atoms};
   }
   // generate requested string
-  for (let i = 0; i < matches.length; i++) {
+  for (let i = 0; i < specs.length; i++) {
     // generate the substitution according to the spec
-    const spec = matches[i].spec;
+    const spec: Spec = specs[i];
     const sub = makeSubstitution(spec.atoms, spec.min, spec.max);
 
     const fhead = format.substring(0, spec.index);
@@ -105,12 +115,16 @@ function generate (format: string): string {
   return format;
 }
 
-function decodeRanges (rangeString: string): [] {
-  const chars = [];
+function decodeRanges (rangeString: string): string[] {
+  const chars: string[] = [];
   const range = rangeString.split('');
+
   if (range[0] === '-') {
-    chars.push(range.shift());
+    chars.push('-');
+    range.shift();
+    //chars.push(range.shift());
   }
+
   let lastchar = '';
   for (let i = 0; i < range.length; i++) {
     // if not a dash then it *might* be the start of a range
@@ -126,12 +140,13 @@ function decodeRanges (rangeString: string): [] {
     }
     i += 1;
   }
+
   //
   return [...new Set(chars)];
 }
 
 const sizeRE = /\<(\d+)(?:, *(\d+))?\>$/;
-function getMinMax (spec) {
+function getMinMax (spec: string): [string, number, number] {
   const m = spec.match(sizeRE);
   if (!m) {
     return [spec, 1, 1];
@@ -144,7 +159,7 @@ function getMinMax (spec) {
   return [spec, parseInt(min), parseInt(max)];
 }
 
-function makeSubstitution (atoms, min, max) {
+function makeSubstitution (atoms: string[], min: number, max: number) {
   const n = atoms.length - 1;
   const sub = [];
   const iterations = random(min, max);
@@ -154,8 +169,6 @@ function makeSubstitution (atoms, min, max) {
   return sub.join('');
 }
 
-function random (min, max) {
+function random (min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
-module.exports = generate;
