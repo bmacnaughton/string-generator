@@ -1,4 +1,4 @@
-{
+module.exports = {
   "root": true,
   "extends": "eslint:recommended",
   "env": {
@@ -6,7 +6,7 @@
     "es6": true,
     "mocha": true
   },
-
+  "parser": "babel-eslint",
   "parserOptions": {
     "ecmaVersion": 2018,
     "sourceType": "script"
@@ -51,6 +51,7 @@
     "no-redeclare": 2,
     "no-self-assign": 2,
     "no-unused-labels": 2,
+    "no-useless-catch": 2,
 
     // Strict Mode
     // http://eslint.org/docs/rules/#strict-mode
@@ -90,7 +91,7 @@
     "quotes": [2, "single", {"avoidEscape": true}],
     // semi: 2
     "space-before-blocks": [2, "always"],
-    "space-before-function-paren": [2, "always"],
+    "space-before-function-paren": [2, "never"],
     // space-in-parens: [2, "never"]
     "space-infix-ops": ["warn", {"int32Hint": true}],
     "space-unary-ops": 2,
