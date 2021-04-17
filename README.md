@@ -81,9 +81,9 @@ gen('${literal<2>}'); // 'literalliteral'
 
 ## todos
 
-- add base64 (convert given string to base64) like what syntax? @b64(arg)?
-- ~~allow <n|m|o> syntax on count spec to choose one of the given lengths~~
 - ~~test suite~~
+- ~~allow <n|m|o> syntax on count spec to choose one of the given lengths~~
+- add base64 (convert given string to base64) like what syntax? @b64(arg)?
 - options like supplying random number generator?
 - options to supply own code-words
   - requires constructor (new StringGenerator())

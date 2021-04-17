@@ -2,8 +2,10 @@
   "name": "@bmacnaughton/string-generator",
   "version": "1.0.0",
   "description": "generate specific string patterns from simple templates",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
+    "prepack": "npm run build && npm run test",
+    "build": "tsc",
     "test": "mocha test/*.test.js",
     "test:nyc": "nyc mocha test/*.test.js",
     "test:ci": "mkdir -p .nyc_output && nyc -r lcov -r text npm test",

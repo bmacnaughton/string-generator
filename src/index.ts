@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * format:
  * '${pattern}${pattern}literal'
@@ -49,7 +47,7 @@ const hex = decodeRanges('a-f0-9');
 const HEX = decodeRanges('A-F0-9');
 const base58 = decodeRanges('A-HJ-NP-Za-km-z1-9');
 
-const codeWords = {
+const codeWords : {[key: string]: string[]} = {
   alpha,
   numeric,
   alphanumeric,
@@ -58,10 +56,24 @@ const codeWords = {
   base58,
 };
 
+interface Spec {
+  type: string,
+  full: string,
+  index: number,
+  count: CountSpec,
+  atoms: string[],
+}
+
+interface CountSpec {
+  iterations() : number;
+}
+
+
 const specRE = /\$\{(.+?)\}+/g;
 
-function generate (format) {
+export function generate(format: string): string {
   const matches = [];
+  const specs: Spec[] = [];
   let match;
   while ((match = specRE.exec(format)) !== null) {
     matches.unshift(match);
@@ -69,7 +81,7 @@ function generate (format) {
   for (let i = 0; i < matches.length; i++) {
     const [full, interior] = matches[i];
     const {index} = matches[i];
-    const [spec, counts] = decodePattern(interior);
+    const [spec, count] = decodePattern(interior);
     let atoms;
     let type;
     switch (spec[0]) {
@@ -95,13 +107,13 @@ function generate (format) {
         atoms = [spec];
         break;
     }
-    matches[i].spec = {type, full, index, counts, atoms};
+    specs[i] = {type, full, index, count, atoms};
   }
   // generate requested string
-  for (let i = 0; i < matches.length; i++) {
+  for (let i = 0; i < specs.length; i++) {
     // generate the substitution according to the spec
-    const spec = matches[i].spec;
-    const sub = makeSubstitution(spec.atoms, spec.counts);
+    const spec: Spec = specs[i];
+    const sub = makeSubstitution(spec.atoms, spec.count);
 
     const fhead = format.substring(0, spec.index);
     const ftail = format.substring(spec.index + spec.full.length);
@@ -111,73 +123,94 @@ function generate (format) {
   return format;
 }
 
-function decodeRanges (range) {
-  const chars = [];
-  range = range.split('');
+function decodeRanges (rangeString: string): string[] {
+  const chars: string[] = [];
+  const range = rangeString.split('');
+
   if (range[0] === '-') {
-    chars.push(range.shift());
+    chars.push('-');
+    range.shift();
+    //chars.push(range.shift());
   }
-  let lastchar;
+
+  let lastchar = '';
   for (let i = 0; i < range.length; i++) {
+    // if not a dash then it *might* be the start of a range
     if (range[i] !== '-') {
       chars.push(lastchar = range[i]);
-    } else {
-      const start = lastchar.charCodeAt(0) + 1;
-      const end = range[i + 1].charCodeAt(0);
-      for (let i = start; i <= end; i++) {
-        chars.push(String.fromCharCode(i));
-      }
-      i += 1;
+      continue;
     }
+    // it is a dash, so the last character is the start of a range
+    const start = lastchar.charCodeAt(0) + 1;
+    const end = range[i + 1].charCodeAt(0);
+    for (let i = start; i <= end; i++) {
+      chars.push(String.fromCharCode(i));
+    }
+    i += 1;
   }
+
+  //
   return [...new Set(chars)];
+}
+
+class DiscreteCount {
+  counts: number[];
+  constructor(counts: number[]) {
+    this.counts = counts;
+  }
+  iterations() {
+    return this.counts[random(0, this.counts.length - 1)];
+  }
+}
+class RangeCount {
+  min: number;
+  max: number;
+  constructor(min: number, max: number) {
+    this.min = min;
+    this.max = max;
+  }
+  iterations() {
+    return random(this.min, this.max);
+  }
 }
 
 const rangeRE = /\<(\d+)(?:, *(\d+))?\>$/;
 const oneofRE = /\<(\d+)(?:\|(\d+))*\>$/;
-//
-// decode a pattern into the substitution-spec and the count-spec.
-//
-function decodePattern (pattern) {
+function decodePattern(pattern: string): [string, CountSpec] {
   let m = pattern.match(rangeRE);
   if (m) {
     // there has to be a min match
-    const min = m[1];
-    const max = m[2] === undefined ? min : m[2];
+    let min = parseInt(m[1]);
+    let max = m[2] === undefined ? min : parseInt(m[2]);
+    if (min > max) {
+      const t = min;
+      min = max;
+      max = t;
+    }
 
     pattern = pattern.slice(0, -m[0].length);
-    return [pattern, {range: {min: parseInt(min), max: parseInt(max)}}];
+    return [pattern, new RangeCount(min, max)];
   }
   m = pattern.match(oneofRE);
   if (m) {
     pattern = pattern.slice(0, -m[0].length);
     const counts = m[0].slice(1, -1).split('|').map(n => parseInt(n));
-    return [pattern, {oneof: counts}];
+    return [pattern, new DiscreteCount(counts)];
   }
-
-  // default if the substitution spec didn't match either form.
-  return [pattern, {range: {min: 1, max: 1}}];
+  // default if no match for either form
+  return [pattern, new RangeCount(1, 1)];
 }
 
-function makeSubstitution (atoms, counts) {
+function makeSubstitution (atoms: string[], counts: CountSpec) {
   const n = atoms.length - 1;
   const sub = [];
-  let iterations;
-  if (counts.range) {
-    iterations = random(counts.range.min, counts.range.max);
-  } else /* istanbul ignore else */ if (counts.oneof) {
-    iterations = counts.oneof[random(0, counts.oneof.length - 1)];
-  } else {
-    throw 'invalid count-spec';
-  }
+  const iterations = counts.iterations();
   for (let i = 0; i < iterations; i++) {
     sub.push(atoms[random(0, n)]);
   }
   return sub.join('');
 }
 
-function random (min, max) {
+function random (min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
-module.exports = generate;
