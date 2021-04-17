@@ -48,7 +48,13 @@ gen('${literal<2>}'); // 'literalliteral'
  * literal
  *
  * count-spec:
+ * count-range | count-oneof
+ *
+ * count-range:
  * min, max=min  // default when not present <1, 1>
+ *
+ * count-oneof:
+ * n(|m)*
  *
  * range-spec
  * a-zA-Z0       // if - is desired must be first character
@@ -73,9 +79,9 @@ gen('${literal<2>}'); // 'literalliteral'
 
 ## todos
 
-- allow <n|m|o> syntax on count spec to choose one of the given lengths
-- add base64 (convert given string to base64) like what syntax? @b64(arg)?
 - ~~test suite~~
+- ~~allow <n|m|o> syntax on count spec to choose one of the given lengths~~
+- add base64 (convert given string to base64) like what syntax? @b64(arg)?
 - options like supplying random number generator?
 - options to supply own code-words
   - requires constructor (new StringGenerator())

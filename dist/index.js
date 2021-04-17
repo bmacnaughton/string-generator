@@ -1,6 +1,4 @@
-'use strict';
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.generate = void 0;
+"use strict";
 /**
  * format:
  * '${pattern}${pattern}literal'
@@ -15,7 +13,13 @@ exports.generate = void 0;
  * literal
  *
  * count-spec:
+ * count-range | count-oneof
+ *
+ * count-range:
  * min, max=min  // default when not present <1, 1>
+ *
+ * count-oneof:
+ * n(|m)*
  *
  * range-spec
  * a-zA-Z0       // if - is desired must be first character
@@ -36,6 +40,8 @@ exports.generate = void 0;
  *
  * characters not in a ${pattern} group are literal.
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.generate = void 0;
 const alpha = decodeRanges('A-Za-z');
 const numeric = decodeRanges('0-9');
 const alphanumeric = decodeRanges('A-Za-z0-9');
@@ -61,7 +67,7 @@ function generate(format) {
     for (let i = 0; i < matches.length; i++) {
         const [full, interior] = matches[i];
         const { index } = matches[i];
-        const [spec, min, max] = getMinMax(interior);
+        const [spec, count] = decodePattern(interior);
         let atoms;
         let type;
         switch (spec[0]) {
@@ -87,13 +93,13 @@ function generate(format) {
                 atoms = [spec];
                 break;
         }
-        specs[i] = { type, full, index, min, max, atoms };
+        specs[i] = { type, full, index, count, atoms };
     }
     // generate requested string
     for (let i = 0; i < specs.length; i++) {
         // generate the substitution according to the spec
         const spec = specs[i];
-        const sub = makeSubstitution(spec.atoms, spec.min, spec.max);
+        const sub = makeSubstitution(spec.atoms, spec.count);
         const fhead = format.substring(0, spec.index);
         const ftail = format.substring(spec.index + spec.full.length);
         format = fhead + sub + ftail;
@@ -127,22 +133,47 @@ function decodeRanges(rangeString) {
     //
     return [...new Set(chars)];
 }
-const sizeRE = /\<(\d+)(?:, *(\d+))?\>$/;
-function getMinMax(spec) {
-    const m = spec.match(sizeRE);
-    if (!m) {
-        return [spec, 1, 1];
+class DiscreteCount {
+    constructor(counts) {
+        this.counts = counts;
     }
-    // there has to be a min match
-    const min = m[1];
-    const max = m[2] === undefined ? min : m[2];
-    spec = spec.slice(0, -m[0].length);
-    return [spec, parseInt(min), parseInt(max)];
+    iterations() {
+        return this.counts[random(0, this.counts.length - 1)];
+    }
 }
-function makeSubstitution(atoms, min, max) {
+class RangeCount {
+    constructor(min, max) {
+        this.min = min;
+        this.max = max;
+    }
+    iterations() {
+        return random(this.min, this.max);
+    }
+}
+const rangeRE = /\<(\d+)(?:, *(\d+))?\>$/;
+const oneofRE = /\<(\d+)(?:\|(\d+))*\>$/;
+function decodePattern(pattern) {
+    let m = pattern.match(rangeRE);
+    if (m) {
+        // there has to be a min match
+        const min = m[1];
+        const max = m[2] === undefined ? min : m[2];
+        pattern = pattern.slice(0, -m[0].length);
+        return [pattern, new RangeCount(parseInt(min), parseInt(max))];
+    }
+    m = pattern.match(oneofRE);
+    if (m) {
+        pattern = pattern.slice(0, -m[0].length);
+        const counts = m[0].slice(1, -1).split('|').map(n => parseInt(n));
+        return [pattern, new DiscreteCount(counts)];
+    }
+    // default if no match for either form
+    return [pattern, new RangeCount(1, 1)];
+}
+function makeSubstitution(atoms, counts) {
     const n = atoms.length - 1;
     const sub = [];
-    const iterations = random(min, max);
+    const iterations = counts.iterations();
     for (let i = 0; i < iterations; i++) {
         sub.push(atoms[random(0, n)]);
     }
