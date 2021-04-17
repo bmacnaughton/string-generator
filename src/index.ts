@@ -56,8 +56,6 @@ const codeWords : {[key: string]: string[]} = {
   base58,
 };
 
-const specRE = /\$\{(.+?)\}+/g;
-
 interface Spec {
   type: string,
   full: string,
@@ -69,6 +67,9 @@ interface Spec {
 interface CountSpec {
   iterations() : number;
 }
+
+
+const specRE = /\$\{(.+?)\}+/g;
 
 export function generate(format: string): string {
   const matches = [];
@@ -179,11 +180,16 @@ function decodePattern(pattern: string): [string, CountSpec] {
   let m = pattern.match(rangeRE);
   if (m) {
     // there has to be a min match
-    const min = m[1];
-    const max = m[2] === undefined ? min : m[2];
+    let min = parseInt(m[1]);
+    let max = m[2] === undefined ? min : parseInt(m[2]);
+    if (min > max) {
+      const t = min;
+      min = max;
+      max = t;
+    }
 
     pattern = pattern.slice(0, -m[0].length);
-    return [pattern, new RangeCount(parseInt(min), parseInt(max))];
+    return [pattern, new RangeCount(min, max)];
   }
   m = pattern.match(oneofRE);
   if (m) {
