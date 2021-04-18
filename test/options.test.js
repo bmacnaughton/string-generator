@@ -1,12 +1,12 @@
 'use strict';
 
-const {Generate} = require('..');
+const {Generator} = require('..');
 
 const expect = require('chai').expect;
 
 describe('options', function() {
   before(function() {
-    const generate = new Generate();
+    const generate = new Generator();
     const gen = (p) => generate.generate(p);
   });
 
@@ -16,7 +16,7 @@ describe('options', function() {
     let gen;
     before(function() {
       random = getRandom();
-      generator = new Generate({random});
+      generator = new Generator({random});
       gen = (p) => generator.generate(p);
     });
     after(function () {

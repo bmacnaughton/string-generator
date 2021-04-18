@@ -41,7 +41,7 @@
  * characters not in a ${pattern} group are literal.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Generate = void 0;
+exports.Generator = void 0;
 const alpha = decodeRanges('A-Za-z');
 const numeric = decodeRanges('0-9');
 const alphanumeric = decodeRanges('A-Za-z0-9');
@@ -57,7 +57,7 @@ const codeWords = {
     base58,
 };
 const specRE = /\$\{(.+?)\}+/g;
-class Generate {
+class Generator {
     constructor(options = {}) {
         this.rand = Math.random;
         this.random = (min, max) => Math.floor(this.rand() * (max - min + 1)) + min;
@@ -65,7 +65,12 @@ class Generate {
             this.rand = options.random;
         }
     }
-    generate(format) {
+    // provide a long alias for people that like that kind of thing.
+    //generate: (format: string) => string = this.gen;
+    get generate() {
+        return this.gen.bind(this);
+    }
+    gen(format) {
         const matches = [];
         const specs = [];
         let match;
@@ -75,7 +80,7 @@ class Generate {
         for (let i = 0; i < matches.length; i++) {
             const [full, interior] = matches[i];
             const { index } = matches[i];
-            const [spec, count] = Generate.decodePattern(interior);
+            const [spec, count] = Generator.decodePattern(interior);
             let atoms;
             let type;
             switch (spec[0]) {
@@ -149,7 +154,7 @@ class Generate {
         return sub.join('');
     }
 }
-exports.Generate = Generate;
+exports.Generator = Generator;
 function decodeRanges(rangeString) {
     const chars = [];
     const range = rangeString.split('');

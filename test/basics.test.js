@@ -1,7 +1,7 @@
 'use strict';
 
-const {Generate} = require('..');
-const generate = new Generate();
+const {Generator} = require('..');
+const generate = new Generator();
 const gen = (p) => generate.generate(p);
 
 const expect = require('chai').expect;

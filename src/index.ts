@@ -71,10 +71,15 @@ interface CountSpec {
 
 const specRE = /\$\{(.+?)\}+/g;
 
-export class Generate {
+export class Generator {
   rand: () => number = Math.random;
   random: RandomMinMax = (min: number, max: number) =>
     Math.floor(this.rand() * (max - min + 1)) + min;
+  // provide a long alias for people that like that kind of thing.
+  //generate: (format: string) => string = this.gen;
+  get generate() {
+    return this.gen.bind(this);
+  }
 
   constructor(options: any = {}) {
     if (options.random) {
@@ -82,7 +87,7 @@ export class Generate {
     }
   }
 
-  generate(format: string): string {
+  gen(format: string): string {
     const matches = [];
     const specs: Spec[] = [];
     let match;
@@ -92,7 +97,7 @@ export class Generate {
     for (let i = 0; i < matches.length; i++) {
       const [full, interior] = matches[i];
       const { index } = matches[i];
-      const [spec, count] = Generate.decodePattern(interior);
+      const [spec, count] = Generator.decodePattern(interior);
       let atoms;
       let type;
       switch (spec[0]) {
