@@ -64,6 +64,9 @@ class Generator {
         if (options.random) {
             this.rand = options.random;
         }
+        if (options.codeWords) {
+            this.addCodeWords(options.codeWords);
+        }
     }
     // provide a long alias for people that like that kind of thing.
     //generate: (format: string) => string = this.gen;
@@ -153,6 +156,8 @@ class Generator {
         }
         return sub.join('');
     }
+    addCodeWords(codeWords) {
+    }
 }
 exports.Generator = Generator;
 function decodeRanges(rangeString) {
@@ -178,7 +183,7 @@ function decodeRanges(rangeString) {
         i += 1;
     }
     // TODO make these strings instead of arrays
-    return [...new Set(chars)];
+    return [...new Set(chars)].join('');
 }
 class DiscreteCount {
     constructor(counts) {

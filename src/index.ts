@@ -47,7 +47,7 @@ const hex = decodeRanges('a-f0-9');
 const HEX = decodeRanges('A-F0-9');
 const base58 = decodeRanges('A-HJ-NP-Za-km-z1-9');
 
-const codeWords : {[key: string]: string[]} = {
+const codeWords : {[key: string]: string} = {
   alpha,
   numeric,
   alphanumeric,
@@ -56,12 +56,14 @@ const codeWords : {[key: string]: string[]} = {
   base58,
 };
 
+type Indexable = string | string[];
+
 interface Spec {
   type: string,
   full: string,
   index: number,
   count: CountSpec,
-  atoms: string[],
+  atoms: Indexable,
 }
 
 type RandomMinMax = (min: number, max: number) => number;
@@ -84,6 +86,9 @@ export class Generator {
   constructor(options: any = {}) {
     if (options.random) {
       this.rand = options.random;
+    }
+    if (options.codeWords) {
+      this.addCodeWords(options.codeWords);
     }
   }
 
@@ -168,7 +173,7 @@ export class Generator {
     return [pattern, new RangeCount(1, 1)];
   }
 
-  makeSubstitution(atoms: string[], counts: CountSpec) {
+  makeSubstitution(atoms: Indexable, counts: CountSpec) {
     const n = atoms.length - 1;
     const sub = [];
     const iterations = counts.iterations(this.random);
@@ -177,9 +182,13 @@ export class Generator {
     }
     return sub.join('');
   }
+
+  addCodeWords(codeWords: {[key: string]: (arg: string) => string}) {
+
+  }
 }
 
-function decodeRanges(rangeString: string): string[] {
+function decodeRanges(rangeString: string): string {
   const chars: string[] = [];
   const range = rangeString.split('');
 
@@ -204,7 +213,7 @@ function decodeRanges(rangeString: string): string[] {
     i += 1;
   }
   // TODO make these strings instead of arrays
-  return [...new Set(chars)];
+  return [...new Set(chars)].join('');
 }
 
 class DiscreteCount {
