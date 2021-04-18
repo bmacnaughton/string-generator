@@ -21,7 +21,8 @@ You know the routine.
 ## Usage
 
 ```js
-const gen = require('@bmacnaughton/string-generator');
+const {Generator} = require('@bmacnaughton/string-generator');
+const gen = new Generator().generate;
 
 gen('${[A-F0-9]}');   // one random hex character
 gen('${=hex}');       // one random lowercase hex character
@@ -30,7 +31,26 @@ gen('${=hex<4>}:${=hex<6>}:${=hex<2>}'); // dead:beefca:fe (random)
 gen('${[ab]<10>}');   // 'abbbaabbba' (random)
 gen('${(this|that|else)<2>}');  // 'thiselse'
 gen('${literal<2>}'); // 'literalliteral'
+gen('${=hex<2,8>}');  // between 2 and 8 hex characters (inclusive)
+gen('${=hex<2|5|9>}');// 2, 5, or 9 hex characters
 ```
+
+`generate` is a helper function that binds the `gen` method to the instance. You
+could also use the object as it is:
+
+```js
+const {Generator} = require('@bmacnaughton/string-generator');
+const g = new Generator();
+
+g.gen('${[A-F0-9]}');   // one random hex character
+```
+
+## Options
+
+The `Generator` constructor takes an options object.
+
+`random` - replace `Math.random` with this function that must have the same signature.
+
 
 ## reference (from the original inline code spec)
 ```js
@@ -81,7 +101,8 @@ gen('${literal<2>}'); // 'literalliteral'
 
 - ~~test suite~~
 - ~~allow <n|m|o> syntax on count spec to choose one of the given lengths~~
-- add base64 (convert given string to base64) like what syntax? @b64(arg)?
-- options like supplying random number generator?
+- ~~convert to class~~
+- ~~supply random number generator~~
 - options to supply own code-words
-  - requires constructor (new StringGenerator())
+- add base64 (convert given string to base64) like what syntax? @b64(arg)?
+- make basics.test iterate using optional random function.
