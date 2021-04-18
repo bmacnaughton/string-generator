@@ -11,6 +11,9 @@
     "test:ci": "mkdir -p .nyc_output && nyc -r lcov -r text npm test",
     "test:text": "nyc -r text mocha"
   },
+  "files": [
+    "dist/index.js"
+  ],
   "keywords": [
     "simple",
     "strings",
