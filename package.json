@@ -15,6 +15,8 @@
     "dist/index.js"
   ],
   "keywords": [
+    "javascript",
+    "mock", "mocking", "mocks",
     "simple",
     "strings",
     "generator",
