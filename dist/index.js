@@ -58,8 +58,12 @@ const codeWords = {
 };
 const specRE = /\$\{(.+?)\}+/g;
 class Generate {
-    constructor() {
-        this.random = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    constructor(options = {}) {
+        this.rand = Math.random;
+        this.random = (min, max) => Math.floor(this.rand() * (max - min + 1)) + min;
+        if (options.random) {
+            this.rand = options.random;
+        }
     }
     generate(format) {
         const matches = [];
@@ -150,9 +154,8 @@ function decodeRanges(rangeString) {
     const chars = [];
     const range = rangeString.split('');
     if (range[0] === '-') {
-        chars.push('-');
-        range.shift();
-        //chars.push(range.shift());
+        // @ts-ignore
+        chars.push(range.shift());
     }
     let lastchar = '';
     for (let i = 0; i < range.length; i++) {
