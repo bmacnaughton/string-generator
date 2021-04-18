@@ -64,66 +64,114 @@ interface Spec {
   atoms: string[],
 }
 
+type RandomMinMax = (min: number, max: number) => number;
 interface CountSpec {
-  iterations() : number;
+  iterations(random: RandomMinMax) : number;
 }
-
 
 const specRE = /\$\{(.+?)\}+/g;
 
-export function generate(format: string): string {
-  const matches = [];
-  const specs: Spec[] = [];
-  let match;
-  while ((match = specRE.exec(format)) !== null) {
-    matches.unshift(match);
+export class Generate {
+  random: RandomMinMax = (min: number, max: number) =>
+    Math.floor(Math.random() * (max - min + 1)) + min;
+
+  constructor() {
+
   }
-  for (let i = 0; i < matches.length; i++) {
-    const [full, interior] = matches[i];
-    const {index} = matches[i];
-    const [spec, count] = decodePattern(interior);
-    let atoms;
-    let type;
-    switch (spec[0]) {
-      case '[':
-        type = 'range-spec';
-        atoms = decodeRanges(spec.slice(1, -1));
-        break;
-      case '=': {
-        type = 'code-word';
-        const charset = codeWords[spec.slice(1)];
-        if (!charset) {
-          throw new Error(`bad code-word: ${spec.slice(1)}`);
-        }
-        atoms = charset;
-        break;
-      }
-      case '(':
-        type = 'choice-spec';
-        atoms = spec.slice(1, -1).split('|');
-        break;
-      default:
-        type = 'something-else';
-        atoms = [spec];
-        break;
+
+  generate(format: string): string {
+    const matches = [];
+    const specs: Spec[] = [];
+    let match;
+    while ((match = specRE.exec(format)) !== null) {
+      matches.unshift(match);
     }
-    specs[i] = {type, full, index, count, atoms};
-  }
-  // generate requested string
-  for (let i = 0; i < specs.length; i++) {
-    // generate the substitution according to the spec
-    const spec: Spec = specs[i];
-    const sub = makeSubstitution(spec.atoms, spec.count);
+    for (let i = 0; i < matches.length; i++) {
+      const [full, interior] = matches[i];
+      const { index } = matches[i];
+      const [spec, count] = Generate.decodePattern(interior);
+      let atoms;
+      let type;
+      switch (spec[0]) {
+        case '[':
+          type = 'range-spec';
+          atoms = decodeRanges(spec.slice(1, -1));
+          break;
+        case '=': {
+          type = 'code-word';
+          const charset = codeWords[spec.slice(1)];
+          if (!charset) {
+            throw new Error(`bad code-word: ${spec.slice(1)}`);
+          }
+          atoms = charset;
+          break;
+        }
+        case '(':
+          type = 'choice-spec';
+          atoms = spec.slice(1, -1).split('|');
+          break;
+        default:
+          type = 'something-else';
+          atoms = [spec];
+          break;
+      }
+      specs[i] = { type, full, index, count, atoms };
+    }
+    // generate requested string
+    for (let i = 0; i < specs.length; i++) {
+      // generate the substitution according to the spec
+      const spec: Spec = specs[i];
+      const sub = this.makeSubstitution(spec.atoms, spec.count);
 
-    const fhead = format.substring(0, spec.index);
-    const ftail = format.substring(spec.index + spec.full.length);
-    format = fhead + sub + ftail;
+      const fhead = format.substring(0, spec.index);
+      const ftail = format.substring(spec.index + spec.full.length);
+      format = fhead + sub + ftail;
+    }
+
+    return format;
   }
 
-  return format;
+  private static decodePattern(pattern: string): [string, CountSpec] {
+    // is is a count-range like <2,5>?
+    let m = pattern.match(/\<(\d+)(?:, *(\d+))?\>$/);
+    if (m) {
+      // there has to be a min match
+      let min = parseInt(m[1]);
+      let max = m[2] === undefined ? min : parseInt(m[2]);
+      if (min > max) {
+        const t = min;
+        min = max;
+        max = t;
+      }
+
+      pattern = pattern.slice(0, -m[0].length);
+      return [pattern, new RangeCount(min, max)];
+    }
+
+    // is it a oneof-range like <2|4>?
+    m = pattern.match(/\<(\d+)(?:\|(\d+))*\>$/);
+    if (m) {
+      pattern = pattern.slice(0, -m[0].length);
+      const counts = m[0].slice(1, -1).split('|').map(n => parseInt(n));
+      return [pattern, new DiscreteCount(counts)];
+    }
+
+    // default if no match for either form
+    return [pattern, new RangeCount(1, 1)];
+  }
+
+  makeSubstitution(atoms: string[], counts: CountSpec) {
+    const n = atoms.length - 1;
+    const sub = [];
+    const iterations = counts.iterations(this.random);
+    for (let i = 0; i < iterations; i++) {
+      sub.push(atoms[this.random(0, n)]);
+    }
+    return sub.join('');
+  }
 }
 
-function decodeRanges (rangeString: string): string[] {
+function decodeRanges(rangeString: string): string[] {
   const chars: string[] = [];
   const range = rangeString.split('');
 
@@ -148,8 +196,7 @@ function decodeRanges (rangeString: string): string[] {
     }
     i += 1;
   }
-
-  //
+  // TODO make these strings instead of arrays
   return [...new Set(chars)];
 }
 
@@ -158,7 +205,7 @@ class DiscreteCount {
   constructor(counts: number[]) {
     this.counts = counts;
   }
-  iterations() {
+  iterations(random : RandomMinMax) {
     return this.counts[random(0, this.counts.length - 1)];
   }
 }
@@ -169,48 +216,7 @@ class RangeCount {
     this.min = min;
     this.max = max;
   }
-  iterations() {
+  iterations(random: RandomMinMax) {
     return random(this.min, this.max);
   }
-}
-
-const rangeRE = /\<(\d+)(?:, *(\d+))?\>$/;
-const oneofRE = /\<(\d+)(?:\|(\d+))*\>$/;
-function decodePattern(pattern: string): [string, CountSpec] {
-  let m = pattern.match(rangeRE);
-  if (m) {
-    // there has to be a min match
-    let min = parseInt(m[1]);
-    let max = m[2] === undefined ? min : parseInt(m[2]);
-    if (min > max) {
-      const t = min;
-      min = max;
-      max = t;
-    }
-
-    pattern = pattern.slice(0, -m[0].length);
-    return [pattern, new RangeCount(min, max)];
-  }
-  m = pattern.match(oneofRE);
-  if (m) {
-    pattern = pattern.slice(0, -m[0].length);
-    const counts = m[0].slice(1, -1).split('|').map(n => parseInt(n));
-    return [pattern, new DiscreteCount(counts)];
-  }
-  // default if no match for either form
-  return [pattern, new RangeCount(1, 1)];
-}
-
-function makeSubstitution (atoms: string[], counts: CountSpec) {
-  const n = atoms.length - 1;
-  const sub = [];
-  const iterations = counts.iterations();
-  for (let i = 0; i < iterations; i++) {
-    sub.push(atoms[random(0, n)]);
-  }
-  return sub.join('');
-}
-
-function random (min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
