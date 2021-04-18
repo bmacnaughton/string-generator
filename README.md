@@ -1,9 +1,7 @@
 
 # string-generator
 
-![build status](https://github.com/bmacnaughton/string-generator/actions/workflows/on-new-code.yml/badge.svg?branch=master)
-
-[![codecov](https://codecov.io/gh/bmacnaughton/string-generator/branch/master/graph/badge.svg?token=MUWZJSTWPJ)](https://codecov.io/gh/bmacnaughton/string-generator)
+![build status](https://github.com/bmacnaughton/string-generator/actions/workflows/on-new-code.yml/badge.svg?branch=master) [![codecov](https://codecov.io/gh/bmacnaughton/string-generator/branch/master/graph/badge.svg?token=MUWZJSTWPJ)](https://codecov.io/gh/bmacnaughton/string-generator)
 
 This is a simple template-based string generator. I wanted to generate
 random strings that met specific criteria for tests.
