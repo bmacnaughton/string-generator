@@ -59,6 +59,7 @@ const codeWords = {
 const specRE = /\$\{(.+?)\}+/g;
 class Generator {
     constructor(options = {}) {
+        this.codeWords = {};
         this.rand = Math.random;
         this.random = (min, max) => Math.floor(this.rand() * (max - min + 1)) + min;
         if (options.random) {
@@ -93,9 +94,14 @@ class Generator {
                     break;
                 case '=': {
                     type = 'code-word';
-                    const charset = codeWords[spec.slice(1)];
+                    const word = spec.slice(1);
+                    let charset = this.codeWords[word] || codeWords[word];
+                    //const charset = codeWords[spec.slice(1)];
                     if (!charset) {
-                        throw new Error(`bad code-word: ${spec.slice(1)}`);
+                        throw new Error(`bad code-word: ${word}`);
+                    }
+                    if (typeof charset === 'function') {
+                        charset = charset('');
                     }
                     atoms = charset;
                     break;
@@ -157,6 +163,9 @@ class Generator {
         return sub.join('');
     }
     addCodeWords(codeWords) {
+        for (const codeWord in codeWords) {
+            this.codeWords[codeWord] = codeWords[codeWord];
+        }
     }
 }
 exports.Generator = Generator;

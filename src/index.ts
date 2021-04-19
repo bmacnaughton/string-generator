@@ -47,7 +47,11 @@ const hex = decodeRanges('a-f0-9');
 const HEX = decodeRanges('A-F0-9');
 const base58 = decodeRanges('A-HJ-NP-Za-km-z1-9');
 
-const codeWords : {[key: string]: string} = {
+type CodeWordFunction = (arg: string) => Indexable;
+type CodeWord = Indexable | CodeWordFunction;
+type CodeWordMapEntry = {[key: string]: CodeWord};
+
+const codeWords : CodeWordMapEntry = {
   alpha,
   numeric,
   alphanumeric,
@@ -74,6 +78,7 @@ interface CountSpec {
 const specRE = /\$\{(.+?)\}+/g;
 
 export class Generator {
+  codeWords: CodeWordMapEntry = {};
   rand: () => number = Math.random;
   random: RandomMinMax = (min: number, max: number) =>
     Math.floor(this.rand() * (max - min + 1)) + min;
@@ -112,9 +117,14 @@ export class Generator {
           break;
         case '=': {
           type = 'code-word';
-          const charset = codeWords[spec.slice(1)];
+          const word = spec.slice(1);
+          let charset = this.codeWords[word] || codeWords[word];
+          //const charset = codeWords[spec.slice(1)];
           if (!charset) {
-            throw new Error(`bad code-word: ${spec.slice(1)}`);
+            throw new Error(`bad code-word: ${word}`);
+          }
+          if (typeof charset === 'function') {
+            charset = charset('');
           }
           atoms = charset;
           break;
@@ -184,7 +194,9 @@ export class Generator {
   }
 
   addCodeWords(codeWords: {[key: string]: (arg: string) => string}) {
-
+    for(const codeWord in codeWords) {
+      this.codeWords[codeWord] = codeWords[codeWord];
+    }
   }
 }
 

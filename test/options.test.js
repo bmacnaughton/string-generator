@@ -5,10 +5,6 @@ const {Generator} = require('..');
 const expect = require('chai').expect;
 
 describe('options', function() {
-  before(function() {
-    const generate = new Generator();
-    const gen = (p) => generate.generate(p);
-  });
 
   describe('alternate random number generator', function() {
     let random;
@@ -84,6 +80,28 @@ describe('options', function() {
         }
       }
       expect(generated).equal(target, 'not all values in oneof were generated');
+    });
+  });
+
+  describe('supply code-words functions', function() {
+    let gen;
+
+    function xyzzy(arg) {
+      return ['xyzzy'];
+    }
+    before(function () {
+      const options = {
+        codeWords: {
+          xyzzy
+        }
+      }
+      const generator = new Generator(options);
+      gen = generator.generate;
+    });
+
+    it('should use the generator', function() {
+      const string = gen('${=xyzzy}');
+      expect(string).equal('xyzzy');
     });
   });
 

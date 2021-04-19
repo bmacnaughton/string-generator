@@ -35,7 +35,7 @@ gen('${=hex<2,8>}');  // between 2 and 8 hex characters (inclusive)
 gen('${=hex<2|5|9>}');// 2, 5, or 9 hex characters
 ```
 
-`generate` is a helper function that binds the `gen` method to the instance. You
+`generate` is a helper that fetches the `gen` method bound to the instance. You
 could also use the object as it is:
 
 ```js
