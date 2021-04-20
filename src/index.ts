@@ -222,7 +222,6 @@ function decodeRanges(rangeString: string): string {
     }
     i += 1;
   }
-  // TODO make these strings instead of arrays
   return [...new Set(chars)].join('');
 }
 

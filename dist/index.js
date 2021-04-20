@@ -189,7 +189,6 @@ function decodeRanges(rangeString) {
         }
         i += 1;
     }
-    // TODO make these strings instead of arrays
     return [...new Set(chars)].join('');
 }
 class DiscreteCount {
