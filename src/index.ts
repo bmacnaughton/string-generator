@@ -119,7 +119,6 @@ export class Generator {
           type = 'code-word';
           const word = spec.slice(1);
           let charset = this.codeWords[word] || codeWords[word];
-          //const charset = codeWords[spec.slice(1)];
           if (!charset) {
             throw new Error(`bad code-word: ${word}`);
           }
