@@ -25,7 +25,7 @@
  *
  * code-word:
  * base58
- * base64 (nyi)
+ * base64(arg) - (nyi)
  * alpha 'A-Za-z'
  * numeric '0-9'
  * alphanumeric 'A-Za-z0-9'
