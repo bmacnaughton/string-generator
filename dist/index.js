@@ -171,7 +171,6 @@ function decodeRanges(rangeString) {
     const chars = [];
     const range = rangeString.split('');
     if (range[0] === '-') {
-        // @ts-ignore
         chars.push(range.shift());
     }
     let lastchar = '';

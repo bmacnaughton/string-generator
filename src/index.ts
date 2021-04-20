@@ -203,8 +203,7 @@ function decodeRanges(rangeString: string): string {
   const range = rangeString.split('');
 
   if (range[0] === '-') {
-    // @ts-ignore
-    chars.push(range.shift());
+    chars.push(<string>range.shift());
   }
 
   let lastchar = '';
