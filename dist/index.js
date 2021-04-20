@@ -118,9 +118,7 @@ class Generator {
             specs[i] = { type, full, index, count, atoms };
         }
         // generate requested string
-        for (let i = 0; i < specs.length; i++) {
-            // generate the substitution according to the spec
-            const spec = specs[i];
+        for (const spec of specs) {
             const sub = this.makeSubstitution(spec.atoms, spec.count);
             const fhead = format.substring(0, spec.index);
             const ftail = format.substring(spec.index + spec.full.length);
