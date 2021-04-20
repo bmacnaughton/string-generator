@@ -103,7 +103,7 @@ The `Generator` constructor takes an options object.
 - ~~allow <n|m|o> syntax on count spec to choose one of the given lengths~~
 - ~~convert to class~~
 - ~~supply random number generator~~
-- options to supply own code-words (wip)
-- allow code-word functions to have arguments.
+- ~~options to supply own code-words~~
+- allow code-word functions to have arguments (wip)
 - add base64 (convert given string to base64) like what syntax? @b64(arg)?
 - make basics.test iterate using optional random function.
