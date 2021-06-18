@@ -26,7 +26,7 @@
  *
  * code-word:
  * base58
- * base64 (nyi)
+ * base64(arg) - (nyi)
  * alpha 'A-Za-z'
  * numeric '0-9'
  * alphanumeric 'A-Za-z0-9'
@@ -77,10 +77,12 @@ class Generator {
     gen(format) {
         const matches = [];
         const specs = [];
+        // find all the substitution specs
         let match;
         while ((match = specRE.exec(format)) !== null) {
             matches.unshift(match);
         }
+        // decode each spec
         for (let i = 0; i < matches.length; i++) {
             const [full, interior] = matches[i];
             const { index } = matches[i];

@@ -23,8 +23,8 @@ describe('random number generation', function() {
       after(function() {
         let failed = false;
         const tests = this.test.parent.tests;
-        for (var i = 0; i < tests.length; ++i) {
-          if (tests[i].state === 'failed') {
+        for (const test of tests) {
+          if (test.state === 'failed') {
             failed = true;
             break;
           }

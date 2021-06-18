@@ -100,10 +100,13 @@ export class Generator {
   gen(format: string): string {
     const matches = [];
     const specs: Spec[] = [];
+    // find all the substitution specs
     let match;
     while ((match = specRE.exec(format)) !== null) {
       matches.unshift(match);
     }
+
+    // decode each spec
     for (let i = 0; i < matches.length; i++) {
       const [full, interior] = matches[i];
       const { index } = matches[i];
