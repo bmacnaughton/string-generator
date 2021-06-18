@@ -39,53 +39,40 @@ describe('random number generation', function() {
         expect(generator.rand).equal(random);
       });
 
-      // the following three checks are duplicated from basics.test.js.
-      it('a random range should be used', function() {
-        const target = 1 << 2 | 1 << 3 | 1 << 4;
-        let generated = 0;
-        // 100 is an arbitrary limit just so this won't loop forever
-        // if there is a problem.
-        for (let i = 0; i < 100; i++) {
-          const string = gen('${bruce<2,4>}');
-          expect(string).match(/^(bruce){2,4}$/);
-          generated |= 1 << string.length / 5;
-          if (generated === target) {
-            break;
-          }
-        }
-        expect(generated).equal(target, 'not all values in range were generated');
-      });
+      const tests = [
+        {name: 'random range', pattern: '${bruce<2,4>}', expected: /^(bruce){2,4}$/},
+        {name: 'reverse min and max', pattern: '${bruce<4,2>}', expected: /^(bruce){2,4}$/},
+        {
+          name: 'handle one-ofs',
+          pattern: '${(bruce)<0|2|4|7>}',
+          expected: /^|(bruce){2}|(bruce){4}|(bruce){7}$/,
+          target: [0, 2, 4, 7],
+        },
+      ];
 
-      it('reversing min and max should have no effect', function() {
-        const target = 1 << 2 | 1 << 3 | 1 << 4;
-        let generated = 0;
-        // 100 is an arbitrary limit just so this won't loop forever
-        // if there is a problem.
-        for (let i = 0; i < 100; i++) {
-          const string = gen('${bruce<4,2>}');
-          expect(string).match(/^(bruce){2,4}$/);
-          generated |= 1 << string.length / 5;
-          if (generated === target) {
-            break;
-          }
-        }
-        expect(generated).equal(target, 'not all values in range were generated');
-      });
+      for (const t of tests) {
+        it(t.name, function() {
+          let bits = t.target || [2, 3, 4];
+          let target = 0;
+          for (const bit of bits) target |= 1 << bit;
 
-      it('should handle oneofs correctly', function() {
-        const target = 1 << 0 | 1 << 2 | 1 << 4 | 1 << 7;
-        let generated = 0;
-
-        for (let i = 0; i < 100; i++) {
-          const string = gen('${(bruce)<0|2|4|7>}');
-          expect(string).match(/^|(bruce){2}|(bruce){4}|(bruce){7}$/);
-          generated |= 1 << string.length / 5;
-          if (generated === target) {
-            break;
+          let generated = 0;
+          // 100 is an arbitrary limit just so this won't loop forever
+          // if there is a problem.
+          for (let i = 0; i < 100; i++) {
+            const string = gen(t.pattern);
+            expect(string).match(t.expected);
+            //const string = gen('${bruce<2,4>}');
+            //expect(string).match(/^(bruce){2,4}$/);
+            // kind of a hack that counts on each generated atom being 5 long.
+            generated |= 1 << string.length / 5;
+            if (generated === target) {
+              break;
+            }
           }
-        }
-        expect(generated).equal(target, 'not all values in oneof were generated');
-      });
+          expect(generated).equal(target, 'not all values in range were generated');
+        })
+      }
     });
   }
 });
