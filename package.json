@@ -1,6 +1,6 @@
 {
   "name": "@bmacnaughton/string-generator",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "generate specific string patterns from simple templates",
   "main": "dist/index.js",
   "scripts": {
