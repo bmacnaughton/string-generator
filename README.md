@@ -50,6 +50,9 @@ g.gen('${[A-F0-9]}');   // one random hex character
 The `Generator` constructor takes an options object.
 
 `random` - replace `Math.random` with this function that must have the same signature.
+`codeWords` - an object of `word: function()` pairs. code words are referenced using `=word`. if
+a code word is the same as a built-in code word (`hex`, `HEX`, etc.) then the built-in word is
+replaced. `function()` must return an indexable value, e.g., string or array.
 
 
 ## reference (from the original inline code spec)

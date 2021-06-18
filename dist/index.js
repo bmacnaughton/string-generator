@@ -77,7 +77,8 @@ class Generator {
     gen(format) {
         const matches = [];
         const specs = [];
-        // find all the substitution specs
+        // find all the substitution specs. keep in reverse order
+        // so the indexes stay valid as substitutions are made.
         let match;
         while ((match = specRE.exec(format)) !== null) {
             matches.unshift(match);
