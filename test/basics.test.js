@@ -143,9 +143,9 @@ describe('basic tests', function() {
     it('generate strings correctly', function() {
       const codeWords = Object.keys(codeWordTests);
       for (let i = 0; i < maxTests; i++) {
-        for (let j = 0; j < codeWords.length; j++) {
-          const string = gen(`\${=${codeWords[j]}<1,20>}`);
-          expect(string).match(codeWordTests[codeWords[j]], `${codeWords[i]} failed`);
+        for (const codeWord of codeWords) {
+          const string = gen(`\${=${codeWord}<1,20>}`);
+          expect(string).match(codeWordTests[codeWord], `${codeWords[i]} failed`);
         }
       }
     });

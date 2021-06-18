@@ -26,7 +26,7 @@
  *
  * code-word:
  * base58
- * base64 (nyi)
+ * base64(arg) - (nyi)
  * alpha 'A-Za-z'
  * numeric '0-9'
  * alphanumeric 'A-Za-z0-9'
@@ -59,6 +59,7 @@ const codeWords = {
 const specRE = /\$\{(.+?)\}+/g;
 class Generator {
     constructor(options = {}) {
+        this.codeWords = {};
         this.rand = Math.random;
         this.random = (min, max) => Math.floor(this.rand() * (max - min + 1)) + min;
         if (options.random) {
@@ -76,10 +77,13 @@ class Generator {
     gen(format) {
         const matches = [];
         const specs = [];
+        // find all the substitution specs. keep in reverse order
+        // so the indexes stay valid as substitutions are made.
         let match;
         while ((match = specRE.exec(format)) !== null) {
             matches.unshift(match);
         }
+        // decode each spec
         for (let i = 0; i < matches.length; i++) {
             const [full, interior] = matches[i];
             const { index } = matches[i];
@@ -93,9 +97,13 @@ class Generator {
                     break;
                 case '=': {
                     type = 'code-word';
-                    const charset = codeWords[spec.slice(1)];
+                    const word = spec.slice(1);
+                    let charset = this.codeWords[word] || codeWords[word];
                     if (!charset) {
-                        throw new Error(`bad code-word: ${spec.slice(1)}`);
+                        throw new Error(`bad code-word: ${word}`);
+                    }
+                    if (typeof charset === 'function') {
+                        charset = charset('');
                     }
                     atoms = charset;
                     break;
@@ -112,9 +120,7 @@ class Generator {
             specs[i] = { type, full, index, count, atoms };
         }
         // generate requested string
-        for (let i = 0; i < specs.length; i++) {
-            // generate the substitution according to the spec
-            const spec = specs[i];
+        for (const spec of specs) {
             const sub = this.makeSubstitution(spec.atoms, spec.count);
             const fhead = format.substring(0, spec.index);
             const ftail = format.substring(spec.index + spec.full.length);
@@ -157,6 +163,9 @@ class Generator {
         return sub.join('');
     }
     addCodeWords(codeWords) {
+        for (const codeWord in codeWords) {
+            this.codeWords[codeWord] = codeWords[codeWord];
+        }
     }
 }
 exports.Generator = Generator;
@@ -164,7 +173,6 @@ function decodeRanges(rangeString) {
     const chars = [];
     const range = rangeString.split('');
     if (range[0] === '-') {
-        // @ts-ignore
         chars.push(range.shift());
     }
     let lastchar = '';
@@ -182,7 +190,6 @@ function decodeRanges(rangeString) {
         }
         i += 1;
     }
-    // TODO make these strings instead of arrays
     return [...new Set(chars)].join('');
 }
 class DiscreteCount {

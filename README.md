@@ -35,7 +35,7 @@ gen('${=hex<2,8>}');  // between 2 and 8 hex characters (inclusive)
 gen('${=hex<2|5|9>}');// 2, 5, or 9 hex characters
 ```
 
-`generate` is a helper function that binds the `gen` method to the instance. You
+`generate` is a helper that fetches the `gen` method bound to the instance. You
 could also use the object as it is:
 
 ```js
@@ -50,6 +50,9 @@ g.gen('${[A-F0-9]}');   // one random hex character
 The `Generator` constructor takes an options object.
 
 `random` - replace `Math.random` with this function that must have the same signature.
+`codeWords` - an object of `word: function()` pairs. code words are referenced using `=word`. if
+a code word is the same as a built-in code word (`hex`, `HEX`, etc.) then the built-in word is
+replaced. `function()` must return an indexable value, e.g., string or array.
 
 
 ## reference (from the original inline code spec)
@@ -103,6 +106,7 @@ The `Generator` constructor takes an options object.
 - ~~allow <n|m|o> syntax on count spec to choose one of the given lengths~~
 - ~~convert to class~~
 - ~~supply random number generator~~
-- options to supply own code-words
+- ~~options to supply own code-words~~
+- ~~make basics.test iterate using optional random function.~~
+- allow code-word functions to have arguments (wip)
 - add base64 (convert given string to base64) like what syntax? @b64(arg)?
-- make basics.test iterate using optional random function.

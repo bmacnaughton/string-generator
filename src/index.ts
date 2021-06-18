@@ -25,7 +25,7 @@
  *
  * code-word:
  * base58
- * base64 (nyi)
+ * base64(arg) - (nyi)
  * alpha 'A-Za-z'
  * numeric '0-9'
  * alphanumeric 'A-Za-z0-9'
@@ -47,7 +47,11 @@ const hex = decodeRanges('a-f0-9');
 const HEX = decodeRanges('A-F0-9');
 const base58 = decodeRanges('A-HJ-NP-Za-km-z1-9');
 
-const codeWords : {[key: string]: string} = {
+type CodeWordFunction = (arg: string) => Indexable;
+type CodeWord = Indexable | CodeWordFunction;
+type CodeWordMapEntry = {[key: string]: CodeWord};
+
+const codeWords : CodeWordMapEntry = {
   alpha,
   numeric,
   alphanumeric,
@@ -59,11 +63,11 @@ const codeWords : {[key: string]: string} = {
 type Indexable = string | string[];
 
 interface Spec {
-  type: string,
-  full: string,
-  index: number,
-  count: CountSpec,
-  atoms: Indexable,
+  type: string,       // range-spec, code-word, choice-spec
+  full: string,       // the full Spec string
+  index: number,      // the starting position of the Spec
+  count: CountSpec,   // count-range | count-oneof
+  atoms: Indexable,   // one of the atoms will be chosen for each substition
 }
 
 type RandomMinMax = (min: number, max: number) => number;
@@ -74,6 +78,7 @@ interface CountSpec {
 const specRE = /\$\{(.+?)\}+/g;
 
 export class Generator {
+  codeWords: CodeWordMapEntry = {};
   rand: () => number = Math.random;
   random: RandomMinMax = (min: number, max: number) =>
     Math.floor(this.rand() * (max - min + 1)) + min;
@@ -95,10 +100,14 @@ export class Generator {
   gen(format: string): string {
     const matches = [];
     const specs: Spec[] = [];
+    // find all the substitution specs. keep in reverse order
+    // so the indexes stay valid as substitutions are made.
     let match;
     while ((match = specRE.exec(format)) !== null) {
       matches.unshift(match);
     }
+
+    // decode each spec
     for (let i = 0; i < matches.length; i++) {
       const [full, interior] = matches[i];
       const { index } = matches[i];
@@ -112,9 +121,13 @@ export class Generator {
           break;
         case '=': {
           type = 'code-word';
-          const charset = codeWords[spec.slice(1)];
+          const word = spec.slice(1);
+          let charset = this.codeWords[word] || codeWords[word];
           if (!charset) {
-            throw new Error(`bad code-word: ${spec.slice(1)}`);
+            throw new Error(`bad code-word: ${word}`);
+          }
+          if (typeof charset === 'function') {
+            charset = charset('');
           }
           atoms = charset;
           break;
@@ -131,9 +144,7 @@ export class Generator {
       specs[i] = { type, full, index, count, atoms };
     }
     // generate requested string
-    for (let i = 0; i < specs.length; i++) {
-      // generate the substitution according to the spec
-      const spec: Spec = specs[i];
+    for (const spec of specs) {
       const sub = this.makeSubstitution(spec.atoms, spec.count);
 
       const fhead = format.substring(0, spec.index);
@@ -184,7 +195,9 @@ export class Generator {
   }
 
   addCodeWords(codeWords: {[key: string]: (arg: string) => string}) {
-
+    for(const codeWord in codeWords) {
+      this.codeWords[codeWord] = codeWords[codeWord];
+    }
   }
 }
 
@@ -193,8 +206,7 @@ function decodeRanges(rangeString: string): string {
   const range = rangeString.split('');
 
   if (range[0] === '-') {
-    // @ts-ignore
-    chars.push(range.shift());
+    chars.push(<string>range.shift());
   }
 
   let lastchar = '';
@@ -212,7 +224,6 @@ function decodeRanges(rangeString: string): string {
     }
     i += 1;
   }
-  // TODO make these strings instead of arrays
   return [...new Set(chars)].join('');
 }
 
