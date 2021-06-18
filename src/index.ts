@@ -63,11 +63,11 @@ const codeWords : CodeWordMapEntry = {
 type Indexable = string | string[];
 
 interface Spec {
-  type: string,
-  full: string,
-  index: number,
-  count: CountSpec,
-  atoms: Indexable,
+  type: string,       // range-spec, code-word, choice-spec
+  full: string,       // the full Spec string
+  index: number,      // the starting position of the Spec
+  count: CountSpec,   // count-range | count-oneof
+  atoms: Indexable,   // one of the atoms will be chosen for each substition
 }
 
 type RandomMinMax = (min: number, max: number) => number;
@@ -100,7 +100,8 @@ export class Generator {
   gen(format: string): string {
     const matches = [];
     const specs: Spec[] = [];
-    // find all the substitution specs
+    // find all the substitution specs. keep in reverse order
+    // so the indexes stay valid as substitutions are made.
     let match;
     while ((match = specRE.exec(format)) !== null) {
       matches.unshift(match);

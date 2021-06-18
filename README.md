@@ -104,6 +104,6 @@ The `Generator` constructor takes an options object.
 - ~~convert to class~~
 - ~~supply random number generator~~
 - ~~options to supply own code-words~~
+- ~~make basics.test iterate using optional random function.~~
 - allow code-word functions to have arguments (wip)
 - add base64 (convert given string to base64) like what syntax? @b64(arg)?
-- make basics.test iterate using optional random function.
