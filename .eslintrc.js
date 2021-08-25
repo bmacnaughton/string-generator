@@ -94,7 +94,7 @@ module.exports = {
     // space-in-parens: [2, "never"]
     "space-infix-ops": ["warn", {"int32Hint": true}],
     "space-unary-ops": 2,
-    "semi": 1,
+    "semi": ["warn", "always", {"omitLastInOneLineBlock": true}],
 
     // ECMAScript 6
     // http://eslint.org/docs/rules/#ecmascript-6
