@@ -135,6 +135,7 @@ export class Generator {
           countSpec = spec.slice(subSpec.length + 1);
           count = Generator.decodeRepeat(countSpec);
           break;
+
         case '[':
           type = 'range-spec';
           m = /^\[(.|\\{0}'\])+\]/.exec(spec);
@@ -159,6 +160,7 @@ export class Generator {
           countSpec = spec.slice(subSpec.length);
           count = Generator.decodeRepeat(countSpec);
           break;
+
         case '"':
         case "'":
           type = 'literal-spec';
@@ -174,6 +176,7 @@ export class Generator {
           count = Generator.decodeRepeat(countSpec);
           atoms = [subSpec.slice(1, -1)];
           break;
+
         case '\\':
           // quoted literal string, remove leading \ and fall through to default
           // literal string. this allows quoting a string to begin with `=[("'`
