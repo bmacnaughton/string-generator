@@ -100,7 +100,7 @@ export class Generator {
     return this.gen(['', ''], spec);
   }
 
-  gen(strings: string[], ...specs: any): string {
+  gen(strings: [string, ...string[]], ...specs: any): string {
     const parsedSpecs: Spec[] = [];
     // =codeword<repeats>
     // [char-range]<repeats>
@@ -108,6 +108,7 @@ export class Generator {
     // "literal"|'literal'<repeats>
     for (let spec of specs) {
       if (typeof spec !== 'string') {
+        parsedSpecs.push({ type: 'literal', count: new RangeCount(1, 1), atoms: [String(spec)] });
         continue;
       }
       let type;
@@ -121,7 +122,7 @@ export class Generator {
           type = 'code-word';
           m = /^[A-Za-z][A-Za-z0-9-]*/.exec(spec.slice(1));
           if (!m) {
-            throw new Error(`found "${spec.slice(1)} when expecting codeword`);
+            throw new Error(`found "${spec.slice(1)}" when expecting valid codeword`);
           }
           subSpec = m[0];
           let charset = this.codeWords[subSpec] || codeWords[subSpec];
@@ -151,8 +152,8 @@ export class Generator {
         case '(':
           type = 'choice-spec';
           m = /^\((.|\\{0}'\))+\)/.exec(spec);
-          if (!m) {
-            throw new Error(`found "${spec} when expecting choice-spec`);
+          if (!m || m[0].length === 2) {
+            throw new Error(`found "${spec}" when expecting choice-spec`);
           }
           subSpec = m[0];
           atoms = subSpec.slice(1, -1).split('|');
@@ -169,7 +170,7 @@ export class Generator {
             '"': /^"(.|\\{0}")+"/
           }[spec[0]].exec(spec);
           if (!m) {
-            throw new Error(`invalid literal "${spec}"`);
+            throw new Error(`invalid literal-spec "${spec}"`);
           }
           subSpec = m[0];
           countSpec = spec.slice(subSpec.length);
@@ -197,7 +198,7 @@ export class Generator {
 
     // generate requested string
     let ix = 0;
-    let result = strings[ix] ?? '';
+    let result = strings[ix];
     for (const spec of parsedSpecs) {
       const sub = this.makeSubstitution(spec.atoms, spec.count);
       result += sub + strings[++ix];

@@ -89,9 +89,23 @@ describe('basic tests', function() {
       ];
       for (const test of tests) {
         const repeatPart = test.bad.slice('"bruce"'.length);
-        expect(() => gen(['', ''], test.bad)).throws(`invalid repeat-spec "${repeatPart}"`);
+        expect(() => generate.decode(test.bad)).throws(`invalid repeat-spec "${repeatPart}"`);
       }
     });
+
+    it('a decoded non-string value returns the String(value)', function() {
+      expect(generate.decode(42)).equal('42');
+    });
+
+    it('a template literal with non-string value returns the String(value)', function() {
+      const string = gen`bruce${7}`;
+      expect(string).equal('bruce7');
+    });
+
+    it('a template with no replacements works', function() {
+      const string = gen`bruce says hi`;
+      expect(string).equal('bruce says hi');
+    })
   });
 
   describe('code-words', function() {
@@ -117,9 +131,14 @@ describe('basic tests', function() {
       }
     });
 
-    it('handles bad code-word by throwing', function() {
+    it('handles unknown code-word by throwing', function() {
       const thrower = () => gen`${'=bad-word'}`;
       expect(thrower).throws('bad code-word: bad-word');
+    });
+
+    it('handles invalid code-word by throwing', function() {
+      const thrower = () => gen`${'=77sunset-strip'}`;
+      expect(thrower).throws('found "77sunset-strip" when expecting valid codeword');
     });
   });
 
@@ -139,10 +158,15 @@ describe('basic tests', function() {
       }
     });
 
-    it('handles dash in range string', function() {
+    it('handles dash in the first position', function() {
       const string = gen`${'[-a]<5>'}`;
       expect(string).match(/^(a|-){5}$/);
     });
+
+    it('handles a dash in the last position', function() {
+      const string = gen`${'[a-]<5>'}`;
+      expect(string).match(/^(a|-){5}$/);
+    })
 
     it('handles lists without dashes', function() {
       const string = gen`${'[xyz]<5>'}`;
@@ -157,6 +181,11 @@ describe('basic tests', function() {
       for (const ch of ['x', 'y', 'z']) {
         expect(string.includes(ch)).equal(true, msg);
       }
+    });
+
+    it('throws when given an empty range-spec', function() {
+      const thrower = () => gen`${'[]'}`;
+      expect(thrower).throws();
     });
   });
 
@@ -195,9 +224,14 @@ describe('basic tests', function() {
       }
       expect(generated).equal(target, 'not all values in range were generated');
     });
+
+    it('throws when given an empty spec', function() {
+      const thrower = () => gen`${'()'}`;
+      expect(thrower).throws(`found "()" when expecting choice-spec`)
+    })
   });
 
-  describe('literals', function() {
+  describe('literal-specs', function() {
     it('should handle literal replacements', function() {
       let string = gen`${'"literal"'}`;
       expect(string).equal('literal');
@@ -210,6 +244,25 @@ describe('basic tests', function() {
       expect(string).equal('bruce says hi.');
       string = gen`${'=hex<4>'}-${'=hex<20>'}-2`;
       expect(string).match(/[0-9a-f]{4}-[0-9a-f]{20}-2/);
+    });
+
+    it('throws on unterminated quote', function() {
+      const thrower = () => gen`${'"unterminated<2>'}`;
+      expect(thrower).throws(`invalid literal-spec ""unterminated<2>"`)
+    });
+
+    it('allows quoting of spec as a tag', function() {
+      let string = gen`\=bruce`;
+      expect(string).equal('=bruce');
+    });
+
+    it('allows quoting of specs using the decode function', function() {
+      let chars = `[("'`;
+      for (const ch of chars) {
+        const quoted = `\\${ch}bruce|`;
+        let string = generate.decode(quoted);
+        expect(string).equal(quoted.slice(1));
+      }
     });
   });
 });
