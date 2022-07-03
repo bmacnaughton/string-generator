@@ -198,7 +198,7 @@ describe('basic tests', function() {
     it('handles lists and ranges combined', function() {
       const string = gen`${'[xy-z]<100>'}`;
       // it's possible for this to fail but the chance is quite low.
-      const chance = chances(3, 100).toExponential(3);
+      const chance = chances(3, 100, 2).toExponential(3);
       const msg = `enter the lottery; this had a ${chance} chance of failing`;
       expect(string).match(/^(x|y|z){100}$/);
       for (const ch of ['x', 'y', 'z']) {
@@ -297,15 +297,27 @@ function random(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// calculate the independent probability of not getting one of possibilities
-// in sampleCount tries. e.g., chances(2, 1) => 0.5, chances(2, 2) => 0.25
-function chances(possibilities, sampleCount) {
+// from bmacnaughton/utilities
+// calculate the probability of n of the possibilities coming up
+// sampleCount times in a row.
+function probability(possibilities, sampleCount, n = 1) {
   sampleCount = Math.floor(sampleCount);
   possibilities = Math.floor(possibilities);
 
+  // if there is only one possibility the chance is 100%
+  if (possibilities <= 1) {
+    return possibilities;
+  }
+
+  if (n > possibilities) {
+    throw new Error(` ${n} is greater than the possibilities: ${possibilities}`);
+  }
+
+  possibilities = n / possibilities;
+
   let chance = 1;
   while (sampleCount-- > 0) {
-    chance /= possibilities;
+    chance *= possibilities;
   }
   return chance;
 }
