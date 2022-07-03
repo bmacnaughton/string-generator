@@ -8,41 +8,54 @@ random strings that met specific criteria for tests.
 
 Why not use an existing package that does everything, like [faker](https://github.com/Marak/Faker.js)?
 If you need the complexity that comes with `faker` then by all means use
-it. But if you want to work with a very simple, template-driven API, then
-this might be helpful. It's simple, small, flexible and, time permitting,
-will be extensible.
+it. But if you want to work with a very simple, template-driven API, with
+no dependencies then this might be helpful. It's simple, small, flexible
+and moderately extensible.
+
+Version 3 has [major breaking changes](#breaking-changes-from-version-2).
 
 ## Installing
 
 You know the routine.
 
-`$ npm install --save-dev @bmacnaughton/string-generator`
+`$ npm install --save-dev @bmacnaughton/string-generator@3`
 
 ## Usage
 
-```js
-const {Generator} = require('@bmacnaughton/string-generator');
-const gen = new Generator().generate;
+Here is documentation by example usage.
 
-gen('${[A-F0-9]}');   // one random hex character
-gen('${=hex}');       // one random lowercase hex character
-gen('${=HEX<10>}');   // 10 random uppercase hex characters
-gen('${=hex<4>}:${=hex<6>}:${=hex<2>}'); // dead:beefca:fe (random)
-gen('${[ab]<10>}');   // 'abbbaabbba' (random)
-gen('${(this|that|else)<2>}');  // 'thiselse'
-gen('${literal<2>}'); // 'literalliteral'
-gen('${=hex<2,8>}');  // between 2 and 8 hex characters (inclusive)
-gen('${=hex<2|5|9>}');// 2, 5, or 9 hex characters
+```js
+import Generator from '@bmacnaughton/string-generator';
+const g = new Generator();
+// get the tagFunction (bound to `g`) for template literals.
+const gen = g.tagFunction();
+
+gen`${'[A-F0-9]'}`;             // one random hex character
+gen`${'=hex'}`;                 // one random lowercase hex character
+gen`${'=HEX<10>'}`;             // 10 random uppercase hex characters
+gen`${'=hex<4>}:${=hex<6>}:${=hex<2>'}`; // dead:beefca:fe (random)
+gen`${'[ab]<10>'}`;             // 'abbbaabbba' (random)
+gen`${'(this|that|else)<2>'}`;  // 'thiselse'
+gen`${'"literal"<2>'}`;           // 'literalliteral'
+gen`${'=hex<2:8>'}`;            // between 2 and 8 hex characters (inclusive)
+gen`${'=hex<2|5|9>'}`;          // 2, 5, or 9 hex characters
+gen`${`\` + someFunc()}`;
 ```
 
-`generate` is a helper that fetches the `gen` method bound to the instance. You
-could also use the object as it is:
+In all the above cases, the `g.decode()` function can be used on the
+string value with the `${..}` construct, e.g., `g.decode('=hex<2:8>')`
+to convert the value directly. This can be useful if your code already
+uses a tag function.
 
 ```js
-const {Generator} = require('@bmacnaughton/string-generator');
+import Generator from '@bmacnaughton/string-generator';
 const g = new Generator();
+// get the decode function (bound to `g`) for decoding literals
+const decode = g.decodeFunction();
 
-g.gen('${[A-F0-9]}');   // one random hex character
+g.decode('${[A-F0-9]}');   // one random hex character
+// or
+decode('${[A-F0-9]}');
 ```
 
 ## Options
@@ -54,8 +67,29 @@ The `Generator` constructor takes an options object.
 a code word is the same as a built-in code word (`hex`, `HEX`, etc.) then the built-in word is
 replaced. `function()` must return an indexable value, e.g., string or array.
 
+## Breaking changes from version 2
 
-## reference (from the original inline code spec)
+Version 3 uses ES modules. You must use an `import` statement or the `import()` function.
+There is only a default export, the `Generator` class.
+
+Version 3 takes string-generator in a new direction. Version 2 embedded string-template-like
+patterns in a string. Version 3 embeds string patterns with string-templates that are executed
+by a tag-function (or by calling a decode function directly).
+
+- v2: `gen('${=alpha<20>}')`
+- v3: ``gen`${'=alpha<20>'}` `` or `decode('=alpha<20>')`
+
+There are a number of other less significant changes.
+- literal-specs use `"` or `'`
+- it is possible to quote the first interpolated character with `\` to avoid it
+being interpreted by `string-generator`.
+- repeat-specs ranges use `:` instead of `,`. Now `<1:5>` means the range 1 to 5.
+
+
+## Historical napkin scrawlings
+
+I wanted a simple string generator. These are my original working notes.
+
 ```js
 /**
  * format:
