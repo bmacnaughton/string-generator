@@ -1,6 +1,6 @@
 {
   "name": "@bmacnaughton/string-generator",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "generate specific string patterns from simple templates",
   "main": "dist/index.js",
   "type": "module",
@@ -28,6 +28,10 @@
   ],
   "author": "Bruce A. MacNaughton <bmacnaughton@gmail.com>",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bmacnaughton/string-generator"
+  },
   "devDependencies": {
     "chai": "^4.3.6",
     "mocha": "^10.0.0",

@@ -1,44 +1,3 @@
-/**
- * format:
- * '${pattern}${pattern}literal'
- *
- * pattern:
- * substitution-spec<count-spec>   // count-spec is optional
- *
- * substitution-spec:
- * [range-spec]
- * =code-word
- * (choice-spec)
- * 'literal' | "literal" | `literal`
- *
- * count-spec:
- * count-range | count-oneof
- *
- * count-range:
- * min:max=min  // default when not present <1:1>
- *
- * count-oneof:
- * n(|m)*
- *
- * range-spec
- * a-zA-Z0       // if - is desired must be first character
- *
- * code-word:
- * base58
- * base64(arg) - (nyi)
- * alpha 'A-Za-z'
- * numeric '0-9'
- * alphanumeric 'A-Za-z0-9'
- * hex 'ABCDEFabcdef0123456789'
- *
- * choice-spec:
- * this|that...
- *
- * literal-spec:
- * "lit chars" | 'lit chars' | `lit chars`    // mostly useful for repeating
- *
- * characters not in a ${pattern} group are literal.
- */
 const alpha = decodeRanges('A-Za-z');
 const numeric = decodeRanges('0-9');
 const alphanumeric = decodeRanges('A-Za-z0-9');
@@ -67,6 +26,9 @@ export default class Generator {
     }
     tagFunction() {
         return this.gen.bind(this);
+    }
+    decodeFunction() {
+        return this.decode.bind(this);
     }
     decode(spec) {
         return this.gen(['', ''], spec);

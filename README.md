@@ -8,8 +8,8 @@ random strings that met specific criteria for tests.
 
 Why not use an existing package that does everything, like [faker](https://github.com/Marak/Faker.js)?
 If you need the complexity that comes with `faker` then by all means use
-it. But if you want to work with a very simple, template-driven API, with
-no dependencies then this might be helpful. It's simple, small, flexible
+it. But if you want to work with a very simple, template-driven API with
+no dependencies, then this might be helpful. It's simple, small, flexible,
 and moderately extensible.
 
 Version 3 has [major breaking changes](#breaking-changes-from-version-2).
@@ -73,7 +73,7 @@ Version 3 uses ES modules. You must use an `import` statement or the `import()` 
 There is only a default export, the `Generator` class.
 
 Version 3 takes string-generator in a new direction. Version 2 embedded string-template-like
-patterns in a string. Version 3 embeds string patterns with string-templates that are executed
+patterns in a string. Version 3 embeds string patterns within string-templates that are executed
 by a tag-function (or by calling a decode function directly).
 
 - v2: `gen('${=alpha<20>}')`
