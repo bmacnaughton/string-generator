@@ -12,31 +12,29 @@ describe('options', function() {
       expect(generator.rand).equal(Math.random);
     })
 
-    it('should be using our custome random generator if specified', function() {
+    it('should be using a custom random generator if specified', function() {
       const random = () => 0.5;
       const generator = new Generator({random});
       expect(generator.rand).equal(random);
     });
   });
 
-  describe('supply code-words functions', function() {
+  describe('add code-words', function() {
     let gen;
 
-    function xyzzy(arg) {
-      return ['xyZzy'];
-    }
     before(function () {
       const options = {
         codeWords: {
-          xyzzy
+          xyzzy(arg) {
+            return ['xyZzy'];
+          }
         }
       }
-      const generator = new Generator(options);
-      gen = generator.generate;
+      gen = new Generator(options).tagFunction();
     });
 
-    it('should use the generator', function() {
-      const string = gen('${=xyzzy}');
+    it('should use the custom code-word', function() {
+      const string = gen`${'=xyzzy'}`;
       expect(string).equal('xyZzy');
     });
   });

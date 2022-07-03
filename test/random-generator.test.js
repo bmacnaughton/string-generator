@@ -18,7 +18,7 @@ describe('random number generation', function() {
           random = getRandom();
         }
         generator = new Generator({random});
-        gen = (p) => generator.generate(p);
+        gen = generator.tagFunction();
       });
       after(function() {
         let failed = false;
@@ -40,11 +40,11 @@ describe('random number generation', function() {
       });
 
       const tests = [
-        {name: 'random range', pattern: '${bruce<2,4>}', expected: /^(bruce){2,4}$/},
-        {name: 'reverse min and max', pattern: '${bruce<4,2>}', expected: /^(bruce){2,4}$/},
+        {name: 'random range', pattern: '"bruce"<2:4>', expected: /^(bruce){2,4}$/},
+        {name: 'reverse min and max', pattern: '"bruce"<4:2>', expected: /^(bruce){2,4}$/},
         {
-          name: 'handle one-ofs',
-          pattern: '${(bruce)<0|2|4|7>}',
+          name: 'handle choice-spec',
+          pattern: '(bruce)<0|2|4|7>',
           expected: /^|(bruce){2}|(bruce){4}|(bruce){7}$/,
           target: [0, 2, 4, 7],
         },
@@ -60,10 +60,8 @@ describe('random number generation', function() {
           // 100 is an arbitrary limit just so this won't loop forever
           // if there is a problem.
           for (let i = 0; i < 100; i++) {
-            const string = gen(t.pattern);
+            const string = gen(['', ''], t.pattern);
             expect(string).match(t.expected);
-            //const string = gen('${bruce<2,4>}');
-            //expect(string).match(/^(bruce){2,4}$/);
             // kind of a hack that counts on each generated atom being 5 long.
             generated |= 1 << string.length / 5;
             if (generated === target) {

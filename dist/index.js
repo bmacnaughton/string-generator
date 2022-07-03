@@ -10,13 +10,13 @@
  * [range-spec]
  * =code-word
  * (choice-spec)
- * literal
+ * 'literal' | "literal" | `literal`
  *
  * count-spec:
  * count-range | count-oneof
  *
  * count-range:
- * min, max=min  // default when not present <1, 1>
+ * min:max=min  // default when not present <1:1>
  *
  * count-oneof:
  * n(|m)*
@@ -36,7 +36,7 @@
  * this|that...
  *
  * literal-spec:
- * literal characters    // mostly useful for repeating
+ * "lit chars" | 'lit chars' | `lit chars`    // mostly useful for repeating
  *
  * characters not in a ${pattern} group are literal.
  */
@@ -57,6 +57,8 @@ const codeWords = {
     base58,
 };
 const specRE = /\$\{(.+?)\}+/g;
+//
+const specRE2 = /\$\{(?<open>[=([`"'])(.+?)\k<open>(\<[0-9|:]+\>)?\}+/g;
 class Generator {
     constructor(options = {}) {
         this.codeWords = {};
@@ -69,68 +71,116 @@ class Generator {
             this.addCodeWords(options.codeWords);
         }
     }
-    // provide a long alias for people that like that kind of thing.
-    //generate: (format: string) => string = this.gen;
-    get generate() {
+    tagFunction() {
         return this.gen.bind(this);
     }
-    gen(format) {
-        const matches = [];
-        const specs = [];
-        // find all the substitution specs. keep in reverse order
-        // so the indexes stay valid as substitutions are made.
-        let match;
-        while ((match = specRE.exec(format)) !== null) {
-            matches.unshift(match);
-        }
-        // decode each spec
-        for (let i = 0; i < matches.length; i++) {
-            const [full, interior] = matches[i];
-            const { index } = matches[i];
-            const [spec, count] = Generator.decodePattern(interior);
-            let atoms;
+    decode(spec) {
+        return this.gen(['', ''], spec);
+    }
+    gen(strings, ...specs) {
+        var _a;
+        const parsedSpecs = [];
+        // =codeword<repeats>
+        // [char-range]<repeats>
+        // (choice|choice)<repeats>
+        // "literal"|'literal'<repeats>
+        for (let spec of specs) {
+            if (typeof spec !== 'string') {
+                continue;
+            }
             let type;
+            let atoms;
+            let subSpec;
+            let countSpec;
+            let count;
+            let m;
             switch (spec[0]) {
-                case '[':
-                    type = 'range-spec';
-                    atoms = decodeRanges(spec.slice(1, -1));
-                    break;
-                case '=': {
+                case '=':
                     type = 'code-word';
-                    const word = spec.slice(1);
-                    let charset = this.codeWords[word] || codeWords[word];
+                    m = /^[A-Za-z][A-Za-z0-9-]*/.exec(spec.slice(1));
+                    if (!m) {
+                        throw new Error(`found "${spec.slice(1)} when expecting codeword`);
+                    }
+                    subSpec = m[0];
+                    let charset = this.codeWords[subSpec] || codeWords[subSpec];
                     if (!charset) {
-                        throw new Error(`bad code-word: ${word}`);
+                        throw new Error(`bad code-word: ${subSpec}`);
                     }
                     if (typeof charset === 'function') {
                         charset = charset('');
                     }
                     atoms = charset;
+                    countSpec = spec.slice(subSpec.length + 1);
+                    count = Generator.decodeRepeat(countSpec);
                     break;
-                }
+                case '[':
+                    type = 'range-spec';
+                    m = /^\[(.|\\{0}'\])+\]/.exec(spec);
+                    if (!m || m[0].length === 2) {
+                        throw new Error(`found "${spec}" when expecting range-spec`);
+                    }
+                    subSpec = m[0];
+                    atoms = decodeRanges(subSpec.slice(1, -1));
+                    countSpec = spec.slice(subSpec.length);
+                    count = Generator.decodeRepeat(countSpec);
+                    break;
                 case '(':
                     type = 'choice-spec';
-                    atoms = spec.slice(1, -1).split('|');
+                    m = /^\((.|\\{0}'\))+\)/.exec(spec);
+                    if (!m) {
+                        throw new Error(`found "${spec} when expecting choice-spec`);
+                    }
+                    subSpec = m[0];
+                    atoms = subSpec.slice(1, -1).split('|');
+                    countSpec = spec.slice(subSpec.length);
+                    count = Generator.decodeRepeat(countSpec);
                     break;
+                case '"':
+                case "'":
+                    type = 'literal-spec';
+                    m = {
+                        "'": /^'(.|\\{0}')+'/,
+                        '"': /^"(.|\\{0}")+"/
+                    }[spec[0]].exec(spec);
+                    if (!m) {
+                        throw new Error(`invalid literal "${spec}"`);
+                    }
+                    subSpec = m[0];
+                    countSpec = spec.slice(subSpec.length);
+                    count = Generator.decodeRepeat(countSpec);
+                    atoms = [subSpec.slice(1, -1)];
+                    break;
+                case '\\':
+                    // quoted literal string, remove leading \ and fall through to default
+                    // literal string. this allows quoting a string to begin with `=[("'`
+                    // and not be interpreted as a string-generator spec.
+                    spec = spec.slice(1);
                 default:
-                    type = 'something-else';
+                    // it's just a literal string - allows no spec substitutions
+                    type = 'literal';
+                    count = new RangeCount(1, 1);
                     atoms = [spec];
-                    break;
             }
-            specs[i] = { type, full, index, count, atoms };
+            if (count instanceof Error) {
+                throw count;
+            }
+            parsedSpecs.push({ type, count, atoms });
         }
         // generate requested string
-        for (const spec of specs) {
+        let ix = 0;
+        let result = (_a = strings[ix]) !== null && _a !== void 0 ? _a : '';
+        for (const spec of parsedSpecs) {
             const sub = this.makeSubstitution(spec.atoms, spec.count);
-            const fhead = format.substring(0, spec.index);
-            const ftail = format.substring(spec.index + spec.full.length);
-            format = fhead + sub + ftail;
+            result += sub + strings[++ix];
         }
-        return format;
+        return result;
     }
-    static decodePattern(pattern) {
-        // is is a count-range like <2,5>?
-        let m = pattern.match(/\<(\d+)(?:, *(\d+))?\>$/);
+    static decodeRepeat(repeat) {
+        if (!repeat || /^<\s*>$/.test(repeat)) {
+            return new RangeCount(1, 1);
+        }
+        // is is a count-range like <2:5>?
+        let m = repeat.match(/\<(\d+)(?::(\d+))?\>$/);
         if (m) {
             // there has to be a min match
             let min = parseInt(m[1]);
@@ -140,18 +190,16 @@ class Generator {
                 min = max;
                 max = t;
             }
-            pattern = pattern.slice(0, -m[0].length);
-            return [pattern, new RangeCount(min, max)];
+            return new RangeCount(min, max);
         }
         // is it a oneof-range like <2|4>?
-        m = pattern.match(/\<(\d+)(?:\|(\d+))*\>$/);
+        m = repeat.match(/\<(\d+)(?:\|(\d+))*\>$/);
         if (m) {
-            pattern = pattern.slice(0, -m[0].length);
             const counts = m[0].slice(1, -1).split('|').map(n => parseInt(n));
-            return [pattern, new DiscreteCount(counts)];
+            return new DiscreteCount(counts);
         }
-        // default if no match for either form
-        return [pattern, new RangeCount(1, 1)];
+        // if it was none-of-the-above, return an error
+        return new Error(`invalid repeat-spec "${repeat}"`);
     }
     makeSubstitution(atoms, counts) {
         const n = atoms.length - 1;
@@ -172,8 +220,13 @@ exports.Generator = Generator;
 function decodeRanges(rangeString) {
     const chars = [];
     const range = rangeString.split('');
+    // allow a dash character in either the first or the last position.
+    // but don't add it twice.
     if (range[0] === '-') {
         chars.push(range.shift());
+    }
+    if (range[range.length - 1] === '-' && chars.length === 0) {
+        chars.push(range.pop());
     }
     let lastchar = '';
     for (let i = 0; i < range.length; i++) {
