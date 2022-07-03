@@ -169,7 +169,7 @@ describe('basic tests', function() {
 
     it('handles lists without dashes', function() {
       const string = gen`${'[xyz]<5>'}`;
-      expect(string).match(/^(x|y|z|){5}$/);
+      expect(string).match(/^(x|y|z){5}$/);
     });
 
     it('handles lists and ranges combined', function() {
