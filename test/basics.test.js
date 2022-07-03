@@ -210,7 +210,7 @@ describe('basic tests', function() {
 
     it('should generate each possible choice', function() {
       const choices = ['bruce', 'wendy', 'grace'];
-      const target = choices.reduce((acc, v, ix) => acc | 1 << ix, 0);
+      const target = choices.reduce((acc, _v, ix) => acc | 1 << ix, 0);
       let generated = 0;
       // 100 is an arbitrary limit just so this won't loop forever
       // if there is a problem.

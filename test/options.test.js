@@ -25,7 +25,7 @@ describe('options', function() {
     before(function () {
       const options = {
         codeWords: {
-          xyzzy(arg) {
+          xyzzy(_arg) {
             return ['xyZzy'];
           }
         }

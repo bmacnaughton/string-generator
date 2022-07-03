@@ -89,7 +89,7 @@ function getRandom(seed = Date.now() >>> 0) {
 function sfc32 (a, b, c, d) {
   return function() {
     a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
-    var t = (a + b) | 0;
+    let t = (a + b) | 0;
     a = b ^ b >>> 9;
     b = c + (c << 3) | 0;
     c = (c << 21 | c >>> 11);
