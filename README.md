@@ -12,6 +12,8 @@ it. But if you want to work with a very simple, template-driven API, with
 no dependencies then this might be helpful. It's simple, small, flexible
 and moderately extensible.
 
+Version 3 has [major breaking changes](#breaking-changes-from-version-2).
+
 ## Installing
 
 You know the routine.
@@ -20,10 +22,12 @@ You know the routine.
 
 ## Usage
 
+Here is documentation by example usage.
+
 ```js
-const {Generator} = require('@bmacnaughton/string-generator');
+import Generator from '@bmacnaughton/string-generator';
 const g = new Generator();
-// get the tagFunction for template literals.
+// get the tagFunction (bound to `g`) for template literals.
 const gen = g.tagFunction();
 
 gen`${'[A-F0-9]'}`;             // one random hex character
@@ -35,17 +39,23 @@ gen`${'(this|that|else)<2>'}`;  // 'thiselse'
 gen`${'"literal"<2>'}`;           // 'literalliteral'
 gen`${'=hex<2:8>'}`;            // between 2 and 8 hex characters (inclusive)
 gen`${'=hex<2|5|9>'}`;          // 2, 5, or 9 hex characters
+gen`${`\` + someFunc()}`;
 ```
 
 In all the above cases, the `g.decode()` function can be used on the
 string value with the `${..}` construct, e.g., `g.decode('=hex<2:8>')`
-to convert the value directly.
+to convert the value directly. This can be useful if your code already
+uses a tag function.
 
 ```js
-const {Generator} = require('@bmacnaughton/string-generator');
+import Generator from '@bmacnaughton/string-generator';
 const g = new Generator();
+// get the decode function (bound to `g`) for decoding literals
+const decode = g.decodeFunction();
 
-g.gen('${[A-F0-9]}');   // one random hex character
+g.decode('${[A-F0-9]}');   // one random hex character
+// or
+decode('${[A-F0-9]}');
 ```
 
 ## Options
@@ -59,12 +69,15 @@ replaced. `function()` must return an indexable value, e.g., string or array.
 
 ## Breaking changes from version 2
 
+Version 3 uses ES modules. You must use an `import` statement or the `import()` function.
+There is only a default export, the `Generator` class.
+
 Version 3 takes string-generator in a new direction. Version 2 embedded string-template-like
 patterns in a string. Version 3 embeds string patterns with string-templates that are executed
 by a tag-function (or by calling a decode function directly).
 
 - v2: `gen('${=alpha<20>}')`
-- v3: ``gen`${'=alpha<20>'}` `` or `generate.decode('=alpha<20>')`
+- v3: ``gen`${'=alpha<20>'}` `` or `decode('=alpha<20>')`
 
 There are a number of other less significant changes.
 - literal-specs use `"` or `'`
@@ -74,6 +87,9 @@ being interpreted by `string-generator`.
 
 
 ## Historical napkin scrawlings
+
+I wanted a simple string generator. These are my original working notes.
+
 ```js
 /**
  * format:

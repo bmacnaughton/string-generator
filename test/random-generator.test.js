@@ -1,8 +1,8 @@
 'use strict';
 
-const {Generator} = require('..');
+import {expect} from 'chai';
 
-const expect = require('chai').expect;
+import Generator from '../dist/index.js';
 
 describe('random number generation', function() {
 

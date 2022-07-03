@@ -73,11 +73,7 @@ interface CountSpec {
   iterations(random: RandomMinMax) : number;
 }
 
-const specRE = /\$\{(.+?)\}+/g;
-//
-const specRE2 = /\$\{(?<open>[=([`"'])(.+?)\k<open>(\<[0-9|:]+\>)?\}+/g;
-
-export class Generator {
+export default class Generator {
   codeWords: CodeWordMapEntry = {};
   rand: () => number = Math.random;
   random: RandomMinMax = (min: number, max: number) =>

@@ -1,13 +1,12 @@
 'use strict';
 
-const {Generator} = require('..');
+import {expect} from 'chai';
+
+import Generator from '../dist/index.js';
 const generate = new Generator();
 const gen = generate.tagFunction();
 
-const expect = require('chai').expect;
-
 const maxTests = 10;
-
 
 describe('basic tests', function() {
   describe('count-specs', function() {
@@ -175,8 +174,9 @@ describe('basic tests', function() {
 
     it('handles lists and ranges combined', function() {
       const string = gen`${'[xy-z]<100>'}`;
-      // it's possible for this to fail but the chances are quite low.
-      const msg = `enter the lottery; this had a ${chances(3, 100)} chance of failing`;
+      // it's possible for this to fail but the chance is quite low.
+      const chance = chances(3, 100).toExponential(3);
+      const msg = `enter the lottery; this had a ${chance} chance of failing`;
       expect(string).match(/^(x|y|z){100}$/);
       for (const ch of ['x', 'y', 'z']) {
         expect(string.includes(ch)).equal(true, msg);
@@ -274,15 +274,15 @@ function random(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// given a pool of poolsize, containing n discrete types, what are the chances
-// of never choosing one of the n discrete types.
-function chances(types, poolsize) {
-  let n = Math.floor(poolsize / types);
-  let cumulativeChance = 1;
-  while (n >= 1) {
-    cumulativeChance *= (n / poolsize);
-    n -= 1;
-    poolsize -= 1;
+// calculate the independent probability of not getting one of possibilities
+// in sampleCount tries. e.g., chances(2, 1) => 0.5, chances(2, 2) => 0.25
+function chances(possibilities, sampleCount) {
+  sampleCount = Math.floor(sampleCount);
+  possibilities = Math.floor(possibilities);
+
+  let chance = 1;
+  while (sampleCount-- > 0) {
+    chance /= possibilities;
   }
-  return cumulativeChance;
+  return chance;
 }

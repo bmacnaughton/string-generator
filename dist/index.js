@@ -1,4 +1,3 @@
-"use strict";
 /**
  * format:
  * '${pattern}${pattern}literal'
@@ -40,8 +39,6 @@
  *
  * characters not in a ${pattern} group are literal.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Generator = void 0;
 const alpha = decodeRanges('A-Za-z');
 const numeric = decodeRanges('0-9');
 const alphanumeric = decodeRanges('A-Za-z0-9');
@@ -56,10 +53,7 @@ const codeWords = {
     HEX,
     base58,
 };
-const specRE = /\$\{(.+?)\}+/g;
-//
-const specRE2 = /\$\{(?<open>[=([`"'])(.+?)\k<open>(\<[0-9|:]+\>)?\}+/g;
-class Generator {
+export default class Generator {
     constructor(options = {}) {
         this.codeWords = {};
         this.rand = Math.random;
@@ -216,7 +210,6 @@ class Generator {
         }
     }
 }
-exports.Generator = Generator;
 function decodeRanges(rangeString) {
     const chars = [];
     const range = rangeString.split('');
