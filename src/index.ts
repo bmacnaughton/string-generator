@@ -50,6 +50,10 @@ export default class Generator {
     return this.gen.bind(this);
   }
 
+  decodeFunction(): Function {
+    return this.decode.bind(this);
+  }
+
   decode(spec: string) {
     return this.gen(['', ''], spec);
   }

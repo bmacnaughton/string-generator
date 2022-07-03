@@ -27,6 +27,9 @@ export default class Generator {
     tagFunction() {
         return this.gen.bind(this);
     }
+    decodeFunction() {
+        return this.decode.bind(this);
+    }
     decode(spec) {
         return this.gen(['', ''], spec);
     }

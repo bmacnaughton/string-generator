@@ -9,6 +9,29 @@ const gen = generate.tagFunction();
 const maxTests = 10;
 
 describe('basic tests', function() {
+  describe('function tests', function() {
+    it('should use the unbound tag function', function() {
+      const string = generate.gen`${'literal'}`;
+      expect(string).equal('literal');
+    });
+
+    it('should use the bound tag function', function() {
+      const string = gen`${'literal'}`;
+      expect(string).equal('literal');
+    });
+
+    it('should use the unbound decode function', function() {
+      const string = generate.decode('"literal"');
+      expect(string).equal('literal');
+    });
+
+    it('should use the bound decode function', function() {
+      const decode = generate.decodeFunction();
+      const string = decode('"literal"');
+      expect(string).equal('literal');
+    });
+  });
+
   describe('count-specs', function() {
     it('should default the count-spec to 1', function() {
       const string = gen`${'(bruce)'}`;
