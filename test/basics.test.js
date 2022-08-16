@@ -34,13 +34,18 @@ describe('basic tests', function() {
 
   describe('count-specs', function() {
     it('should default the count-spec to 1', function() {
-      const string = gen`${'(bruce)'}`;
+      let string = gen`${'(bruce)'}`;
       expect(string).equal('bruce', 'no range should act as <1>');
+      string = generate.decode('(bruce)');
+      expect(string).equal('bruce', 'no range for decode should act as <1>');
+
     });
 
     it('a single number should be used', function() {
-      const string = gen`${'(bruce)<2>'}`;
+      let string = gen`${'(bruce)<2>'}`;
       expect(string).equal('brucebruce', 'a single range number works correctly');
+      string = generate.decode('(bruce)<2>');
+      expect(string).equal('brucebruce', 'a single range number works with decode');
     });
 
     it('a random range should be used', function() {

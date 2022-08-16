@@ -53,9 +53,9 @@ const g = new Generator();
 // get the decode function (bound to `g`) for decoding literals
 const decode = g.decodeFunction();
 
-g.decode('${[A-F0-9]}');   // one random hex character
+g.decode('[A-F0-9]');   // one random hex character
 // or
-decode('${[A-F0-9]}');
+decode('[A-F0-9]');
 ```
 
 ## Options
